@@ -1,4 +1,4 @@
-# Learning Management System (LMS) 📚🚀
+# Learning Management System (LMS) 📚
 
 A modern, open-source Learning Management System built for students, teachers, and educational institutions.
 
