@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Sequelize } from 'sequelize';
-import { ENV } from './env';
+import { ENV } from './env.ts';
 
 // MongoDB Connection
 export const connectMongoDB = async () => {
@@ -14,14 +14,14 @@ export const connectMongoDB = async () => {
 };
 
 // PostgreSQL Connection
-export const sequelize = new Sequelize(ENV. POSTGRES_URL, {
+export const sequelize = new Sequelize(ENV.POSTGRES_URL, {
   dialect: 'postgres',
   logging: ENV.NODE_ENV === 'development' ? console.log : false,
 });
 
 export const connectPostgreSQL = async () => {
   try {
-    await sequelize. authenticate();
+    await sequelize.authenticate();
     await sequelize.sync({ alter: ENV.NODE_ENV === 'development' });
     console.log('✅ PostgreSQL connected successfully');
   } catch (error) {

@@ -32,7 +32,7 @@ const submissionSchema = new Schema<ISubmission>({
 
 const assignmentSchema = new Schema<IAssignment>(
   {
-    course: { type: Schema.Types. ObjectId, ref: 'Course', required: true },
+    course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     title: { type: String, required: true },
     description: { type: String, required: true },
     dueDate: { type: Date, required: true },

@@ -13,7 +13,7 @@ export interface IProgress extends Document {
   enrollment: mongoose.Types.ObjectId;
   lessonsProgress: ILessonProgress[];
   quizzesCompleted: mongoose.Types.ObjectId[];
-  assignmentsCompleted: mongoose. Types.ObjectId[];
+  assignmentsCompleted: mongoose.Types.ObjectId[];
   overallProgress: number; // percentage
   lastAccessedAt: Date;
 }
@@ -31,7 +31,7 @@ const progressSchema = new Schema<IProgress>(
     course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
     enrollment: { type: Schema.Types.ObjectId, ref: 'Enrollment', required: true },
     lessonsProgress: [lessonProgressSchema],
-    quizzesCompleted: [{ type: Schema.Types. ObjectId, ref: 'Quiz' }],
+    quizzesCompleted: [{ type: Schema.Types.ObjectId, ref: 'Quiz' }],
     assignmentsCompleted: [{ type: Schema.Types.ObjectId, ref: 'Assignment' }],
     overallProgress: { type: Number, default: 0 },
     lastAccessedAt: { type: Date, default: Date.now },

@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 
 
 
+import ThemeProvider from "@/components/ThemeProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,10 +30,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
       >
-        <Navbar />
-        {children}
+        <ThemeProvider>
+          <Navbar />
+          <main className="min-h-[calc(100vh-64px)]">{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );

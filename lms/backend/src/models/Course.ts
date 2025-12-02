@@ -62,7 +62,7 @@ const courseSchema = new Schema<ICourse>(
     reviews: { type: Number, default: 0 },
     modules: [moduleSchema],
     quizzes: [{ type: Schema.Types.ObjectId, ref: 'Quiz' }],
-    assignments: [{ type: Schema.Types. ObjectId, ref: 'Assignment' }],
+    assignments: [{ type: Schema.Types.ObjectId, ref: 'Assignment' }],
     enrollmentCount: { type: Number, default: 0 },
     level: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
     duration: { type: Number }, // hours

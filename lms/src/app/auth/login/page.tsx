@@ -3,9 +3,53 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { decodeJwt } from "@/lib/auth";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState("student");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const base = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const res = await fetch(`${base}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.message || 'Login failed');
+        setLoading(false);
+        return;
+      }
+
+      if (data.token) {
+        localStorage.setItem('authToken', data.token);
+        const payload = decodeJwt<{ role?: 'student'|'instructor'|'admin' }>(data.token);
+        // Redirect based on role
+        if (payload?.role === 'instructor' || payload?.role === 'admin') {
+          window.location.href = '/dashboard/Admin';
+        } else {
+          window.location.href = '/dashboard/Student';
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -17,7 +61,7 @@ export default function LoginPage() {
               <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
                 📚
               </div>
-              <h1 className="text-3xl font-bold">LearnHub</h1>
+              <h1 className="text-3xl font-bold">9tangle</h1>
             </div>
             <h2 className="text-4xl font-bold mb-6">Welcome Back!</h2>
             <p className="text-xl text-white/90 mb-8">
@@ -85,7 +129,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <form className="space-y-5">
+              <form className="space-y-5" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email Address
@@ -94,6 +138,8 @@ export default function LoginPage() {
                     <span className="absolute left-3 top-3 text-gray-400">✉️</span>
                     <input
                       id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       type="email"
                       placeholder="you@example.com"
                       className="w-full pl-10 pr-4 h-12 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -109,6 +155,8 @@ export default function LoginPage() {
                     <span className="absolute left-3 top-3 text-gray-400">🔒</span>
                     <input
                       id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       type="password"
                       placeholder="••••••••"
                       className="w-full pl-10 pr-4 h-12 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
@@ -134,10 +182,12 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  className="w-full h-12 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors"
+                  disabled={loading}
+                  className="w-full h-12 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors disabled:opacity-70"
                 >
-                  Sign In as Student
+                  {loading ? 'Signing in...' : 'Sign In as Student'}
                 </button>
+                {error && <p className="text-sm text-red-600 mt-2">{error}</p>} 
               </form>
 
               <div className="relative">
@@ -160,7 +210,7 @@ export default function LoginPage() {
 
               <p className="text-center text-sm text-gray-600">
                 Don't have an account?{" "}
-                <Link href="/(auth)/register" className="font-semibold text-purple-600 hover:underline">
+                <Link href="/auth/register" className="font-semibold text-purple-600 hover:underline">
                   Sign up free
                 </Link>
               </p>
@@ -171,19 +221,56 @@ export default function LoginPage() {
           {activeTab === "instructor" && (
             <div className="space-y-6">
               <div className="space-y-1 pb-8">
-                <h2 className="text-3xl font-bold text-center">Instructor Portal</h2>
+                <h2 className="text-3xl font-bold text-center">Instructor Login</h2>
                 <p className="text-center text-base text-gray-600">
-                  Access your dashboard and manage courses
+                  Sign in to manage your courses and students
                 </p>
               </div>
-              <div className="text-center py-12">
-                <p className="text-lg text-gray-600 mb-8">
-                  Instructor login is by invitation only
-                </p>
-                <button className="h-12 px-8 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors">
-                  Request Instructor Access
+
+              <form className="space-y-5" onSubmit={handleSubmit}>
+                <div className="space-y-2">
+                  <label htmlFor="email2" className="block text-sm font-medium text-gray-700">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-gray-400">✉️</span>
+                    <input
+                      id="email2"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      type="email"
+                      placeholder="you@example.com"
+                      className="w-full pl-10 pr-4 h-12 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label htmlFor="password2" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-3 text-gray-400">🔒</span>
+                    <input
+                      id="password2"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      type="password"
+                      placeholder="••••••••"
+                      className="w-full pl-10 pr-4 h-12 text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-12 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors disabled:opacity-70"
+                >
+                  {loading ? 'Signing in...' : 'Sign In as Instructor'}
                 </button>
-              </div>
+                {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+              </form>
             </div>
           )}
         </div>

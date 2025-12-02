@@ -1,5 +1,12 @@
 {
-  "dependencies": {
-    "install": "^0.13.0"
+  "name": "lms-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "npm --prefix lms run dev",
+    "dev:backend": "npm --prefix lms/backend run dev",
+    "build": "npm --prefix lms run build",
+    "start": "npm --prefix lms start",
+    "install:all": "npm --prefix lms install && npm --prefix lms/backend install"
   }
 }

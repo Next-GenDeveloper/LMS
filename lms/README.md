@@ -34,3 +34,36 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Local Development (Backend + Frontend)
+
+To run the backend API and frontend locally:
+
+Backend (API):
+1. cd backend
+2. npm install
+3. Create a `.env` file with required environment variables, for example:
+```
+MONGODB_URL=mongodb://localhost:27017/lms
+POSTGRES_URL=postgresql://user:password@localhost:5432/lms
+JWT_SECRET=your-secret-key
+FRONTEND_URL=http://localhost:3000
+```
+4. Run:
+```powershell
+npm run dev
+```
+
+Frontend (Next.js):
+1. At workspace root (or cd lms):
+2. npm install
+3. Create `.env.local` and add (optional):
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:5000
+```
+4. Run:
+```powershell
+npm run dev
+```
+
+Then open `http://localhost:3000` to access the frontend and try the Login / Register pages.

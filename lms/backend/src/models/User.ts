@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../config/database';
+import { sequelize } from '../config/database.ts';
 
 // MongoDB User Schema
 export interface IUser extends Document {
@@ -49,11 +49,11 @@ export const UserPostgres = sequelize.define('User', {
   firstName: DataTypes.STRING,
   lastName: DataTypes.STRING,
   role: {
-    type: DataTypes. ENUM('student', 'instructor', 'admin'),
+    type: DataTypes.ENUM('student', 'instructor', 'admin'),
     defaultValue: 'student',
   },
   isActive: {
-    type: DataTypes. BOOLEAN,
+    type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
 });
