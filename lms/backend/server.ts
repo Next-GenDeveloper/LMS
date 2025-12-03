@@ -11,6 +11,10 @@ async function bootstrap() {
         console.log('ℹ️ Skipping PostgreSQL connection (USE_POSTGRES is false)');
     }
 
+    // Seed admin account
+    const { seedAdmin } = await import('./src/utils/seedAdmin.ts');
+    await seedAdmin();
+
     const { default: app } = await import('./app.ts');
 
     app.listen(PORT, () => {

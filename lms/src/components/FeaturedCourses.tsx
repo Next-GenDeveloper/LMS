@@ -228,7 +228,7 @@ export default function FeaturedCourses() {
             </div>
             <Link
               href="/courses"
-              className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0053b8] text-white font-semibold hover:bg-[#003a80] transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+              className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0053b8] text-white font-semibold hover:bg-teal-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
             >
               View All Courses
               <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -450,7 +450,7 @@ export default function FeaturedCourses() {
                   <button className="flex-1 py-4 rounded-xl bg-gradient-to-r from-[#0053b8] to-[#003a80] hover:from-[#003a80] hover:to-[#0053b8] text-white font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] shadow-lg hover:shadow-xl">
                     Enroll Now - ${selectedCourse.price}
                   </button>
-                  <button className="px-6 py-4 rounded-xl border-2 border-[#0053b8] text-[#0053b8] dark:text-blue-400 font-semibold hover:bg-[#0053b8] hover:text-white dark:hover:bg-blue-600 transition-all duration-300">
+                  <button className="px-6 py-4 rounded-xl border-2 border-teal-600 text-[#0053b8] dark:text-blue-400 font-semibold hover:bg-[#0053b8] hover:text-white dark:hover:bg-blue-600 transition-all duration-300">
                     Add to Wishlist
                   </button>
                 </div>

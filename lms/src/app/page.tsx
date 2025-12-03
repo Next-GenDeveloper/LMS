@@ -2,7 +2,7 @@
 import Link from "next/link";
 
 import StarRating from "@/components/StarRating";
-import HomeTestimonials from "@/components/HomeTestimonials";
+import LearnersSay from "@/components/LearnersSay";
 import FeaturedCourses from "@/components/FeaturedCourses";
 
 export default function Home() {
@@ -29,13 +29,13 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-4">
               <Link
                 href="/auth/register"
-                className="rounded-full bg-[#d62828] px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-[#b71f1f]"
+                className="rounded-full bg-teal-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-black/20 transition hover:bg-teal-700"
               >
                 Apply for Admission
               </Link>
               <Link
                 href="/courses"
-                className="rounded-full border border-white/70 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-[#0053b8]"
+                className="rounded-full border border-white/70 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-teal-700"
               >
                 Explore Programs
               </Link>
@@ -65,8 +65,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured Courses */}
-      <FeaturedCourses />
+     {/* Feature highlights */}
+     <section className="relative -mt-10 md:-mt-12">
+       <div className="container mx-auto px-6">
+         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+           {[
+             { icon: '🎯', title: 'Career‑ready tracks', desc: 'Curated, outcome‑oriented learning paths' },
+             { icon: '🧑‍🏫', title: 'Expert instructors', desc: 'Learn from industry professionals' },
+             { icon: '🧩', title: 'Hands‑on projects', desc: 'Build real‑world portfolios' },
+             { icon: '📜', title: 'Certificates', desc: 'Share achievements and stand out' },
+           ].map((f, i) => (
+             <div
+               key={f.title}
+               className="group rounded-2xl border bg-white/80 dark:bg-white/5 backdrop-blur p-5 hover:shadow-lg transition-all animate-fade-in-up"
+               style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}
+             >
+               <div className="flex items-start gap-4">
+                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-600 to-cyan-500 text-white text-xl shadow-md">
+                   {f.icon}
+                 </div>
+                 <div>
+                   <h3 className="font-semibold text-slate-900 dark:text-white">{f.title}</h3>
+                   <p className="text-sm text-slate-600 dark:text-slate-400">{f.desc}</p>
+                 </div>
+               </div>
+             </div>
+           ))}
+         </div>
+       </div>
+     </section>
+
+     {/* Trusted by marquee */}
+     <section className="py-12">
+       <div className="container mx-auto px-6">
+         <div className="text-center mb-6">
+           <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Trusted by teams & learners</div>
+         </div>
+         <div className="marquee rounded-2xl border bg-white/60 dark:bg-white/5 backdrop-blur py-4">
+           <div className="marquee-content gap-10 text-slate-500 dark:text-slate-400">
+             {['Figma','Google','Shopify','Meta','Microsoft','Stripe','Amazon','Adobe','Netflix','Airbnb'].map((b) => (
+               <span key={b} className="inline-flex items-center gap-2 text-sm font-medium">
+                 <span className="text-lg">⭐</span> {b}
+               </span>
+             ))}
+             {['Figma','Google','Shopify','Meta','Microsoft','Stripe','Amazon','Adobe','Netflix','Airbnb'].map((b) => (
+               <span key={`${b}-dup`} className="inline-flex items-center gap-2 text-sm font-medium">
+                 <span className="text-lg">⭐</span> {b}
+               </span>
+             ))}
+           </div>
+         </div>
+       </div>
+     </section>
+
+     {/* Featured Courses */}
+     <FeaturedCourses />
 
       {/* Popular Categories */}
       <section className="relative py-20 bg-gradient-to-b from-gray-50/50 to-white dark:from-gray-950 dark:to-gray-900 overflow-hidden">
@@ -203,12 +256,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-16">
-        <div className="container mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">What learners say</h2>
-          <HomeTestimonials />
-        </div>
-      </section>
+      <LearnersSay />
 
       {/* Stats */}
       <section className="py-16">
@@ -252,39 +300,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t">
-        <div className="container mx-auto px-6 py-12 grid gap-8 md:grid-cols-4 text-sm">
-          <div>
-            <div className="font-bold mb-2">LMS</div>
-            <p className="text-gray-600 dark:text-gray-400">Learn without limits with a modern eLearning experience.</p>
-          </div>
-          <div>
-            <div className="font-semibold mb-2">Company</div>
-            <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li><a href="#">About</a></li>
-              <li><a href="#">Careers</a></li>
-              <li><a href="#">Contact</a></li>
-            </ul>
-          </div>
-          <div>
-            <div className="font-semibold mb-2">Resources</div>
-            <ul className="space-y-1 text-gray-600 dark:text-gray-400">
-              <li><a href="#">Blog</a></li>
-              <li><a href="#">Help Center</a></li>
-              <li><a href="#">Terms</a></li>
-            </ul>
-          </div>
-          <div>
-            <div className="font-semibold mb-2">Follow</div>
-            <div className="flex gap-3 text-gray-600 dark:text-gray-400">
-              <a href="#">🐦</a>
-              <a href="#">💼</a>
-              <a href="#">📸</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

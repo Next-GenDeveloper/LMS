@@ -53,7 +53,19 @@ export default function CourseDetailPage({ params }: { params: { id: string } })
             {/* Sidebar */}
             <aside className="rounded-2xl border p-5 bg-white/80 dark:bg-white/5 backdrop-blur h-fit">
               <div className="text-3xl font-extrabold text-purple-700 dark:text-purple-300 mb-3">${course.price}</div>
-              <button className="w-full h-12 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold">Buy this course</button>
+              <button
+                className="w-full h-12 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold"
+                onClick={async () => {
+                  const { isLoggedIn } = await import('@/lib/auth');
+                  if (!isLoggedIn()) {
+                    window.location.href = '/auth/login?next=' + encodeURIComponent(`/courses/${course.id}`);
+                    return;
+                  }
+                  alert('Purchase flow will go here (requires backend). After payment, you will be enrolled.');
+                }}
+              >
+                Buy this course
+              </button>
               <div className="mt-3 text-xs text-gray-500">30-day money-back guarantee</div>
               <div className="mt-6 space-y-2 text-sm">
                 <div>Lifetime access</div>

@@ -29,7 +29,11 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (typeof document !== "undefined") {
-      document.documentElement.setAttribute("data-theme", theme);
+      const root = document.documentElement;
+      root.setAttribute("data-theme", theme);
+      // Add/remove the 'dark' class so Tailwind dark: variants work site-wide
+      if (theme === "dark") root.classList.add("dark");
+      else root.classList.remove("dark");
       localStorage.setItem("theme", theme);
     }
   }, [theme]);

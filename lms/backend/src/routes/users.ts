@@ -10,7 +10,7 @@ const router = Router();
 // Get current user profile
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
-  const u = await User.findById(uid).select('_id email firstName lastName bio profilePicture role createdAt updatedAt');
+  const u = await User.findById(uid).select('_id email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
   if (!u) return res.status(404).json({ message: 'User not found' });
   res.json(u);
 });
@@ -18,14 +18,39 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
 // Update current user profile
 router.put('/me', requireAuth, async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
-  const { firstName, lastName, bio, profilePicture } = req.body || {};
+  const { firstName, lastName, bio, profilePicture, phone, email, preferences } = req.body || {};
+  const update: any = { firstName, lastName, bio, profilePicture, phone, preferences };
+  if (email) update.email = email;
   const updated = await User.findByIdAndUpdate(
     uid,
-    { firstName, lastName, bio, profilePicture },
+    update,
     { new: true, runValidators: true }
-  ).select('email firstName lastName bio profilePicture role createdAt updatedAt');
+  ).select('email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
   if (!updated) return res.status(404).json({ message: 'User not found' });
   res.json(updated);
+});
+
+// Change password
+import { changePasswordValidation, validate } from '../utils/Validators.ts';
+
+router.put('/me/password', requireAuth, validate(changePasswordValidation), async (req: Request, res: Response) => {
+  const uid = (req as any).user?.userId;
+  const { currentPassword, newPassword } = req.body || {};
+  if (!newPassword) return res.status(400).json({ message: 'newPassword is required' });
+  const u = await User.findById(uid).select('password');
+  if (!u) return res.status(404).json({ message: 'User not found' });
+  try {
+    const { comparePassword, hashPassword } = await import('../utils/Passwordhash.ts');
+    if (currentPassword) {
+      const ok = await comparePassword(currentPassword, (u as any).password);
+      if (!ok) return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+    const hashed = await hashPassword(newPassword);
+    await User.findByIdAndUpdate(uid, { password: hashed });
+    return res.json({ ok: true });
+  } catch (e: any) {
+    return res.status(500).json({ message: 'Server error' });
+  }
 });
 
 // Admin: list users

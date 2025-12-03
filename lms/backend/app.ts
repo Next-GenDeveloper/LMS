@@ -8,6 +8,7 @@ import courseRoutes from './src/routes/courses.ts';
 import enrollmentRoutes from './src/routes/enrollments.ts';
 import adminRoutes from './src/routes/admin.ts';
 import userRoutes from './src/routes/users.ts';
+import healthRoutes from './src/routes/health.ts';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api', healthRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

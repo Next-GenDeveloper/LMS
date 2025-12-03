@@ -56,6 +56,28 @@ body {
   animation: fade-in 0.3s ease-out;
 }
 
+/* Simple marquee animation for brand strip */
+.marquee {
+  overflow: hidden;
+  position: relative;
+}
+.marquee-content {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  white-space: nowrap;
+  animation: marquee-scroll 28s linear infinite;
+  padding-left: 1.5rem;
+}
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 @keyframes scale-in {
   from {
     opacity: 0;

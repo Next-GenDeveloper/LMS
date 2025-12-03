@@ -18,15 +18,27 @@ export const validate = (validations: ValidationChain[]) => {
   };
 };
 
+export const strongPassword = body('password')
+  .isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+  .matches(/[A-Z]/).withMessage('Password must include at least one uppercase letter')
+  .matches(/[a-z]/).withMessage('Password must include at least one lowercase letter')
+  .matches(/[0-9]/).withMessage('Password must include at least one digit')
+  .matches(/[^A-Za-z0-9]/).withMessage('Password must include at least one special character');
+
 export const signupValidation = [
   body('email').isEmail().normalizeEmail(),
-  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
+  strongPassword,
   body('fullName').notEmpty().trim(),
 ];
 
 export const loginValidation = [
   body('email').isEmail().normalizeEmail(),
-  body('password').notEmpty(),
+  body('password').notEmpty().isLength({ min: 8 }).withMessage('Invalid password'),
+];
+
+export const changePasswordValidation = [
+  body('currentPassword').optional().isLength({ min: 8 }),
+  strongPassword.withMessage('New password does not meet complexity requirements').bail(),
 ];
 
 export const courseValidation = [

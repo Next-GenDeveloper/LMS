@@ -10,9 +10,15 @@ export interface IUser extends Document {
   lastName: string;
   profilePicture?: string;
   bio?: string;
+  phone?: string;
   role: 'student' | 'instructor' | 'admin';
   isVerified: boolean;
   verificationToken?: string;
+  preferences?: {
+    interests?: string[];
+    preferredLanguage?: string;
+    notifications?: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,9 +31,15 @@ const userSchema = new Schema<IUser>(
     lastName: { type: String, required: true },
     profilePicture: { type: String },
     bio: { type: String },
+    phone: { type: String },
     role: { type: String, enum: ['student', 'instructor', 'admin'], default: 'student' },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
+    preferences: {
+      interests: { type: [String], default: [] },
+      preferredLanguage: { type: String, default: 'en' },
+      notifications: { type: Boolean, default: true },
+    },
   },
   { timestamps: true }
 );

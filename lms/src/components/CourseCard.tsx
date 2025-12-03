@@ -6,7 +6,8 @@ export type Course = {
   id: string;
   title: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string; // legacy field
+  thumbnail?: string; // API field
   price: number;
   author?: string;
   progress?: number; // 0-100
@@ -25,7 +26,7 @@ export default function CourseCard({ course, onClick }: { course: Course; onClic
       className="group rounded-xl border overflow-hidden bg-white/70 dark:bg-white/5 backdrop-blur hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
     >
       <div className="relative h-40 w-full overflow-hidden">
-        <Image src={course.imageUrl} alt={course.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        <Image src={course.imageUrl || course.thumbnail || "/next.svg"} alt={course.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
