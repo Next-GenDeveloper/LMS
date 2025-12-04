@@ -7,7 +7,10 @@ export function useRequireInstructor() {
   const router = useRouter();
   useEffect(() => {
     const user = getUserFromToken();
-    if (!user || (user.role !== 'instructor' && user.role !== 'admin')) {
+    if (!user || user.role !== 'instructor') {
+      // Clear invalid token and redirect
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userProfile');
       router.replace('/auth/login');
     }
   }, [router]);

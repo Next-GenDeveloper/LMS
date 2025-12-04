@@ -1,8 +1,8 @@
 import { User } from '../models/User.ts';
 import { hashPassword } from './Passwordhash.ts';
 
-const ADMIN_EMAIL = 'mirkashi28@gmail.com';
-const ADMIN_PASSWORD = 'Iphone_@11';
+const ADMIN_EMAIL = 'admin@9tangle.com';
+const ADMIN_PASSWORD = 'Admin@9tangle2025!';
 
 export async function seedAdmin() {
   try {

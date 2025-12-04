@@ -9,7 +9,8 @@
     "dev": "ts-node server.ts",
     "build": "tsc",
     "test": "jest",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "seed": "ts-node -e \"import('./src/utils/seedAdmin.ts').then(m => m.seedAdmin())\""
   },
   "keywords": [
     "lms",

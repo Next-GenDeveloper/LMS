@@ -48,18 +48,25 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     const { email, password, isAdmin } = req.body;
-    
+
     // Hardcoded Super Admin credentials
-    const ADMIN_EMAIL = 'mirkashi28@gmail.com';
-    const ADMIN_PASSWORD = 'Iphone_@11';
-    
+    const ADMIN_EMAIL = 'admin@9tangle.com';
+    const ADMIN_PASSWORD = 'Admin@9tangle2025!';
+
+    // Hardcoded Instructor credentials
+    const INSTRUCTOR_EMAIL = 'instructor@lms.com';
+    const INSTRUCTOR_PASSWORD = 'Instructor@2024';
+
     // Check for admin credentials
     const isAdminLogin = email?.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD;
-    
+
+    // Check for instructor credentials
+    const isInstructorLogin = email?.toLowerCase().trim() === INSTRUCTOR_EMAIL.toLowerCase() && password === INSTRUCTOR_PASSWORD;
+
     if (isAdminLogin) {
       // Find or create admin user
       let adminUser = await User.findOne({ email: ADMIN_EMAIL });
-      
+
       if (!adminUser) {
         // Create admin user if doesn't exist
         const { hashPassword } = await import('../utils/Passwordhash.ts');
@@ -80,22 +87,67 @@ export const loginUser = async (req: Request, res: Response) => {
           await adminUser.save();
         }
       }
-      
-      const token = generateToken({ 
-        userId: adminUser._id.toString(), 
-        email: adminUser.email, 
-        role: 'admin' 
+
+      const token = generateToken({
+        userId: adminUser._id.toString(),
+        email: adminUser.email,
+        role: 'admin'
       });
 
-      return res.status(200).json({ 
-        token, 
-        user: { 
-          id: adminUser._id, 
-          email: adminUser.email, 
-          firstName: adminUser.firstName, 
+      return res.status(200).json({
+        token,
+        user: {
+          id: adminUser._id,
+          email: adminUser.email,
+          firstName: adminUser.firstName,
           lastName: adminUser.lastName,
           role: 'admin'
-        } 
+        }
+      });
+    }
+
+    if (isInstructorLogin) {
+      // Find or create instructor user
+      let instructorUser = await User.findOne({ email: INSTRUCTOR_EMAIL });
+
+      if (!instructorUser) {
+        // Create instructor user if doesn't exist
+        const { hashPassword } = await import('../utils/Passwordhash.ts');
+        const hashedPassword = await hashPassword(INSTRUCTOR_PASSWORD);
+        instructorUser = new User({
+          email: INSTRUCTOR_EMAIL,
+          password: hashedPassword,
+          firstName: 'Course',
+          lastName: 'Instructor',
+          role: 'instructor',
+          isVerified: true,
+        });
+        await instructorUser.save();
+      } else {
+        // Ensure existing user is instructor
+        if (instructorUser.role !== 'instructor') {
+          instructorUser.role = 'instructor';
+          instructorUser.firstName = 'Course';
+          instructorUser.lastName = 'Instructor';
+          await instructorUser.save();
+        }
+      }
+
+      const token = generateToken({
+        userId: instructorUser._id.toString(),
+        email: instructorUser.email,
+        role: 'instructor'
+      });
+
+      return res.status(200).json({
+        token,
+        user: {
+          id: instructorUser._id,
+          email: instructorUser.email,
+          firstName: instructorUser.firstName,
+          lastName: instructorUser.lastName,
+          role: 'instructor'
+        }
       });
     }
 
@@ -112,15 +164,15 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const token = generateToken({ userId: user._id.toString(), email: user.email, role: user.role });
 
-    return res.status(200).json({ 
-      token, 
-      user: { 
-        id: user._id, 
-        email: user.email, 
-        firstName: user.firstName, 
+    return res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
         lastName: user.lastName,
         role: user.role
-      } 
+      }
     });
   } catch (error) {
     console.error(error);

@@ -54,46 +54,57 @@ export default function CoursesPage() {
   }, [courses]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+    <div className="min-h-screen bg-[#ffe9d6] bg-[radial-gradient(circle_at_top_left,#ffd1a1,transparent_55%),radial-gradient(circle_at_bottom_right,#ffb46b,transparent_60%)]">
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-[#0053b8] via-[#003a80] to-[#002855] text-white overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="container mx-auto px-4 py-16 md:py-20 relative z-10">
+      <section className="relative overflow-hidden">
+        <div className="container mx-auto px-4 pt-10 pb-6 md:pt-12 md:pb-8">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 animate-fade-in-up">
-              Explore Our Courses
+            <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-500">
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                9T
+              </span>
+              Course catalog
+            </p>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900 animate-fade-in-up">
+              Explore our{" "}
+              <span className="relative inline-block text-orange-500">
+                latest courses
+                <span className="absolute left-0 -bottom-1 h-1 w-full rounded-full bg-orange-400" />
+              </span>
             </h1>
-            <p className="text-lg md:text-xl text-white/90 mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              Learn in-demand skills from industry experts. Track your progress, earn certificates, and level up your career.
+            <p className="text-sm md:text-base text-slate-600 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              Learn in‑demand skills from industry experts. Filter by category, sort by price or recency,
+              and find the perfect path for your next step.
             </p>
             <div className="flex flex-wrap gap-3 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <span className="rounded-full bg-white/20 backdrop-blur px-4 py-2 text-sm font-semibold border border-white/30">Top Instructors</span>
-              <span className="rounded-full bg-white/20 backdrop-blur px-4 py-2 text-sm font-semibold border border-white/30">Certificates</span>
-              <span className="rounded-full bg-white/20 backdrop-blur px-4 py-2 text-sm font-semibold border border-white/30">Lifetime Access</span>
+              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
+                Top instructors
+              </span>
+              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
+                Certificates
+              </span>
+              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
+                Lifetime access
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 py-10 md:py-12">
+      <div className="container mx-auto px-4 pb-10 md:pb-12">
         {/* Search and Filter Section */}
         <div className="mb-8 animate-fade-in-up">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 shadow-lg">
+          <div className="bg-white/95 rounded-3xl border border-orange-100 p-6 shadow-lg backdrop-blur">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">Browse Catalog</h2>
-                <p className="text-gray-600 dark:text-gray-400">Search, filter, and sort to find the perfect course</p>
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">Browse catalog</h2>
+                <p className="text-slate-500 text-sm">Search, filter, and sort to find the perfect course.</p>
               </div>
             </div>
             
             {/* Search Bar */}
             <div className="relative mb-6">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
@@ -102,18 +113,18 @@ export default function CoursesPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search courses by title or description..."
-                className="w-full h-14 pl-12 pr-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                className="w-full h-14 pl-12 pr-4 rounded-xl border-2 border-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
               />
             </div>
 
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Category</label>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Category</label>
                 <select 
                   value={category} 
                   onChange={(e) => setCategory(e.target.value)} 
-                  className="w-full h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 px-4 focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                  className="w-full h-12 rounded-xl border-2 border-orange-100 px-4 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                 >
                   {categories.map((c) => (
                     <option key={c} value={c} className="capitalize">{c}</option>
@@ -121,11 +132,11 @@ export default function CoursesPage() {
                 </select>
               </div>
               <div className="flex-1">
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Sort By</label>
                 <select 
                   value={sort} 
                   onChange={(e) => setSort(e.target.value as SortKey)} 
-                  className="w-full h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 px-4 focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                  className="w-full h-12 rounded-xl border-2 border-orange-100 px-4 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                 >
                   <option value="newest">Newest First</option>
                   <option value="price-asc">Price: Low to High</option>
@@ -145,8 +156,8 @@ export default function CoursesPage() {
               onClick={() => setCategory(c)}
               className={`px-5 py-2.5 rounded-full text-sm font-semibold border-2 transition-all ${
                 category === c 
-                  ? 'bg-gradient-to-r from-[#0053b8] to-[#003a80] text-white border-[#0053b8] shadow-lg transform scale-105' 
-                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-[#0053b8] dark:hover:border-blue-500 hover:text-[#0053b8] dark:hover:text-blue-400'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-400 text-white border-orange-400 shadow-lg transform scale-105' 
+                  : 'bg-white/90 text-slate-700 border-orange-100 hover:border-orange-400 hover:text-orange-500'
               }`}
             >
               {c}
@@ -157,8 +168,8 @@ export default function CoursesPage() {
               onClick={() => setCategory('all')} 
               className={`px-5 py-2.5 rounded-full text-sm font-semibold border-2 transition-all ${
                 category === 'all' 
-                  ? 'bg-gradient-to-r from-[#0053b8] to-[#003a80] text-white border-[#0053b8] shadow-lg transform scale-105' 
-                  : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-[#0053b8] dark:hover:border-blue-500 hover:text-[#0053b8] dark:hover:text-blue-400'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-400 text-white border-orange-400 shadow-lg transform scale-105' 
+                  : 'bg-white/90 text-slate-700 border-orange-100 hover:border-orange-400 hover:text-orange-500'
               }`}
             >
               All Categories
@@ -169,12 +180,12 @@ export default function CoursesPage() {
         {loading && (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">
-                <div className="h-48 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-800 dark:to-gray-700" />
+              <div key={i} className="animate-pulse rounded-3xl border border-orange-100 overflow-hidden bg-white/90">
+                <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100" />
                 <div className="p-5 space-y-3">
-                  <div className="h-5 bg-gray-200 dark:bg-gray-800 rounded w-2/3" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-full" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2" />
+                  <div className="h-5 bg-orange-100 rounded w-2/3" />
+                  <div className="h-4 bg-orange-50 rounded w-full" />
+                  <div className="h-4 bg-orange-50 rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -183,9 +194,9 @@ export default function CoursesPage() {
         
         {error && !loading && (
           <div className="py-12 animate-fade-in-up">
-            <div className="rounded-2xl border-2 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-6 text-center">
-              <div className="text-red-600 dark:text-red-400 font-semibold text-lg mb-2">Oops! Something went wrong</div>
-              <div className="text-red-600 dark:text-red-400">{error}</div>
+            <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-6 text-center">
+              <div className="text-red-600 font-semibold text-lg mb-2">Oops! Something went wrong</div>
+              <div className="text-red-600">{error}</div>
             </div>
           </div>
         )}
@@ -193,8 +204,8 @@ export default function CoursesPage() {
         {!loading && !error && (
           <>
             {filtered.length > 0 ? (
-              <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-                Showing <span className="font-semibold text-[#0053b8] dark:text-blue-400">{filtered.length}</span> course{filtered.length !== 1 ? 's' : ''}
+              <div className="mb-4 text-sm text-slate-600">
+                Showing <span className="font-semibold text-orange-500">{filtered.length}</span> course{filtered.length !== 1 ? 's' : ''}
               </div>
             ) : null}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -207,17 +218,17 @@ export default function CoursesPage() {
             {filtered.length === 0 && (
               <div className="col-span-full py-20 text-center animate-fade-in-up">
                 <div className="text-6xl mb-4">🔍</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No courses found</div>
-                <div className="text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filters</div>
+                <div className="text-2xl font-bold text-slate-900 mb-2">No courses found</div>
+                <div className="text-slate-600 mb-6">Try adjusting your search or filters</div>
                 <button
                   onClick={() => {
                     setQ('');
                     setCategory('all');
                     setSort('newest');
                   }}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#0053b8] to-[#003a80] text-white font-semibold hover:from-[#003a80] hover:to-[#0053b8] transition-all"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white font-semibold hover:from-orange-600 hover:to-orange-500 transition-all"
                 >
-                  Clear Filters
+                  Clear filters
                 </button>
               </div>
             )}

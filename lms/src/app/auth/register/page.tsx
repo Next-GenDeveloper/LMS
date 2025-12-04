@@ -14,10 +14,10 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string()
     .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must include an uppercase letter')
-    .regex(/[a-z]/, 'Password must include a lowercase letter')
-    .regex(/[0-9]/, 'Password must include a digit')
-    .regex(/[^A-Za-z0-9]/, 'Password must include a special character'),
+    .refine((val) => /[A-Z]/.test(val), 'Password must include an uppercase letter')
+    .refine((val) => /[a-z]/.test(val), 'Password must include a lowercase letter')
+    .refine((val) => /[0-9]/.test(val), 'Password must include a digit')
+    .refine((val) => /[^A-Za-z0-9]/.test(val), 'Password must include a special character'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -122,7 +122,7 @@ export default function RegisterForm() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0053b8] via-[#003a80] to-[#002855] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ffe9d6] via-[#ffd1a1] to-[#ffb46b] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl animate-pulse" />
@@ -130,29 +130,29 @@ export default function RegisterForm() {
         </div>
 
         <div className="max-w-5xl w-full relative z-10">
-          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
             <div className="lg:grid lg:grid-cols-2">
               {/* Left Side - Branding */}
-              <div className="hidden lg:flex bg-gradient-to-br from-[#0053b8] to-[#003a80] p-12 flex-col justify-between text-white relative overflow-hidden">
+              <div className="hidden lg:flex bg-gradient-to-br from-orange-400 to-amber-400 p-12 flex-col justify-between text-white relative overflow-hidden">
                 {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
                 
                 <div className="relative z-10">
                   <div className="flex items-center space-x-3 mb-12 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg">
-                      <span className="text-3xl">📚</span>
+                    <div className="w-14 h-14 rounded-2xl bg-white text-orange-500 backdrop-blur flex items-center justify-center shadow-lg">
+                      <span className="text-xl font-extrabold tracking-tight">9T</span>
                     </div>
                     <div>
-                      <h1 className="text-3xl font-bold">9tangle</h1>
-                      <p className="text-sm text-white/80">eLearning Platform</p>
+                      <h1 className="text-3xl font-bold">9Tangle</h1>
+                      <p className="text-sm text-white/80">Online Learning Platform</p>
                     </div>
                   </div>
                   <h2 className="text-5xl font-extrabold mb-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    Start Learning Today
+                    Create your free account
                   </h2>
                   <p className="text-xl text-white/90 mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                    Join thousands of students already learning with our expert-led courses.
+                    Join thousands of students already learning with our expert‑led courses.
                   </p>
                   <div className="space-y-5 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
                     <div className="flex items-center gap-4 p-3 rounded-xl bg-white/10 backdrop-blur hover:bg-white/15 transition-all">
@@ -184,20 +184,20 @@ export default function RegisterForm() {
               </div>
 
               {/* Right Side - Registration Form */}
-              <div className="p-8 lg:p-12">
+              <div className="p-8 lg:p-12 bg-white">
                 <div className="mb-8">
-                  <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white mb-2">
-                    Create your account
+                  <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
+                    Sign up to 9Tangle
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Join our Learning Platform today and start your journey
+                  <p className="text-gray-600">
+                    Join our learning platform today and start your journey.
                   </p>
                 </div>
 
                 <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
                       Full Name
                     </label>
                     <div className="relative group">
@@ -210,18 +210,18 @@ export default function RegisterForm() {
                         {...register('fullName')}
                         type="text"
                         autoComplete="name"
-                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                         placeholder="John Doe"
                       />
                     </div>
                     {errors.fullName && (
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">{errors.fullName.message}</p>
+                      <p className="text-sm text-red-600 font-medium">{errors.fullName.message}</p>
                     )}
                   </div>
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
                       Email Address
                     </label>
                     <div className="relative group">
@@ -234,18 +234,18 @@ export default function RegisterForm() {
                         {...register('email')}
                         type="email"
                         autoComplete="email"
-                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                         placeholder="you@example.com"
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">{errors.email.message}</p>
+                      <p className="text-sm text-red-600 font-medium">{errors.email.message}</p>
                     )}
                   </div>
 
                   {/* Password */}
                   <div className="space-y-2">
-                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
                       Password
                     </label>
                     <div className="relative group">
@@ -258,13 +258,13 @@ export default function RegisterForm() {
                         {...register('password')}
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="new-password"
-                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                         placeholder="Create a strong password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 dark:text-gray-400 hover:text-[#0053b8] dark:hover:text-blue-400 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-orange-500 transition-colors"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? (
@@ -280,14 +280,14 @@ export default function RegisterForm() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">{errors.password.message}</p>
+                      <p className="text-sm text-red-600 font-medium">{errors.password.message}</p>
                     )}
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Must include uppercase, lowercase, digit and special character</p>
+                    <p className="text-xs text-gray-500">Must include uppercase, lowercase, digit and special character</p>
                   </div>
 
                   {/* Confirm Password */}
                   <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
                       Confirm Password
                     </label>
                     <div className="relative group">
@@ -300,13 +300,13 @@ export default function RegisterForm() {
                         {...register('confirmPassword')}
                         type={showConfirmPassword ? 'text' : 'password'}
                         autoComplete="new-password"
-                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0053b8] focus:border-[#0053b8] dark:bg-gray-800 dark:text-white transition-all"
+                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
                         placeholder="Confirm your password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 dark:text-gray-400 hover:text-[#0053b8] dark:hover:text-blue-400 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-orange-500 transition-colors"
                         aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                       >
                         {showConfirmPassword ? (
@@ -322,14 +322,14 @@ export default function RegisterForm() {
                       </button>
                     </div>
                     {errors.confirmPassword && (
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">{errors.confirmPassword.message}</p>
+                      <p className="text-sm text-red-600 font-medium">{errors.confirmPassword.message}</p>
                     )}
                   </div>
 
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-14 text-lg font-bold text-white bg-gradient-to-r from-[#0053b8] to-[#003a80] rounded-xl hover:from-[#003a80] hover:to-[#0053b8] transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="w-full h-14 text-lg font-bold text-white bg-gradient-to-r from-orange-500 to-amber-400 rounded-xl hover:from-orange-600 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center gap-2">
@@ -345,8 +345,8 @@ export default function RegisterForm() {
                   </button>
 
                   <div className="text-center pt-4">
-                    <span className="text-gray-600 dark:text-gray-400">Already have an account? </span>
-                    <Link href="/auth/login" className="font-bold text-[#0053b8] hover:text-[#003a80] dark:text-blue-400 transition-colors">
+                    <span className="text-gray-600">Already have an account? </span>
+                    <Link href="/auth/login" className="font-bold text-orange-500 hover:text-orange-600 transition-colors">
                       Sign in here
                     </Link>
                   </div>

@@ -19,7 +19,7 @@ export default function PreFooter() {
           <Link href="/auth/register" className="rounded-full bg-[#d62828] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-teal-700">
             Get Started
           </Link>
-          <Link href="/courses" className="rounded-full border border-teal-600 px-5 py-2.5 text-sm font-semibold text-teal-700 dark:text-teal-400 transition-colors hover:bg-[#d62828] hover:text-white">
+          <Link href="/courses" className="rounde-full border border-teal-600 px-5 py-2.5 text-sm font-semibold text-teal-700 dark:text-teal-400 transition-colors hover:bg-[#d62828] hover:text-white">
             Browse Courses
           </Link>
         </div>

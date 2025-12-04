@@ -1,11 +1,78 @@
+"use client";
+
 import Link from "next/link";
+import { useState, type FormEvent, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isLoggedIn, getUserFromToken } from "@/lib/auth";
 
 export default function AdminDashboardPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      router.replace('/auth/login');
+      return;
+    }
+
+    const user = getUserFromToken();
+    if (!user || user.role !== 'admin') {
+      // Clear invalid token and redirect
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userProfile');
+      router.replace('/auth/login');
+      return;
+    }
+  }, [router]);
+  const [competitionMessage, setCompetitionMessage] = useState<string | null>(null);
+  const [isCompetitionSubmitting, setIsCompetitionSubmitting] = useState(false);
+  const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null);
+  const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
+
+  const handleCompetitionSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setCompetitionMessage(null);
+    setIsCompetitionSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const payload = {
+      name: formData.get("fullName"),
+      email: formData.get("email"),
+      category: formData.get("category"),
+    };
+
+    // Placeholder for real API call
+    console.log("Competition registration:", payload);
+
+    setTimeout(() => {
+      setIsCompetitionSubmitting(false);
+      setCompetitionMessage("Your competition application has been received. We will contact you soon.");
+      e.currentTarget.reset();
+    }, 600);
+  };
+
+  const handleNewsletterSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setNewsletterMessage(null);
+    setIsNewsletterSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("newsletterEmail");
+
+    // Placeholder for real API call
+    console.log("Newsletter subscription:", email);
+
+    setTimeout(() => {
+      setIsNewsletterSubmitting(false);
+      setNewsletterMessage("Subscribed successfully! Check your inbox for confirmation.");
+      e.currentTarget.reset();
+    }, 600);
+  };
+
   return (
-    <div className="min-h-screen bg-[#fff7f1] text-gray-900">
+    <div className="min-h-screen bg-[#ffe9d6] text-gray-900">
       {/* Navbar */}
-      <header className="w-full bg-[#fff7f1] sticky top-0 z-20 border-b border-orange-100/60 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="w-full bg-[#ffe9d6]/80 sticky top-0 z-20 border-b border-orange-100/60 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-extrabold text-lg">
               M
@@ -17,73 +84,69 @@ export default function AdminDashboardPage() {
               Home
             </a>
             <a href="#">Courses</a>
-            <a href="#">Categories</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+            <a href="#">Instructors</a>
+            <a href="#">Schedules</a>
+            <a href="#">Contact Us</a>
           </nav>
           <div className="flex items-center gap-3">
             <button className="hidden sm:inline-flex text-sm font-semibold text-gray-800">
-              Sign in
+              Login
             </button>
-            <button className="px-4 py-2 rounded-full text-sm font-semibold bg-orange-500 text-white shadow-md hover:bg-orange-600 transition">
-              Get Started
-            </button>
+            <Link href="/auth/register">
+              <button className="px-5 py-2 rounded-full text-sm font-semibold bg-white text-orange-500 shadow-md hover:bg-orange-50 border border-orange-200 transition">
+                Register
+              </button>
+            </Link>
           </div>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4">
         {/* Hero Section */}
-        <section className="grid md:grid-cols-[1.3fr,1fr] gap-10 py-10 md:py-16 items-center">
-          <div>
+        <section className="grid md:grid-cols-[1.2fr,1fr] gap-10 py-12 md:py-20 items-center">
+          <div className="space-y-6">
             <p className="text-xs tracking-[0.2em] font-semibold text-orange-500 mb-3 uppercase">
               A Classical Education
             </p>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight mb-4">
-              A Classical Education for the{" "}
-              <span className="text-orange-500">Future</span>
+            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-2">
+              A Classical
+              <br />
+              Education for
+              <br />
+              the{" "}
+              <span className="relative inline-block text-orange-500">
+                Future
+                <span className="absolute left-0 -bottom-1 h-1 w-full bg-orange-400/70 rounded-full" />
+              </span>
             </h1>
             <p className="text-sm md:text-base text-gray-600 mb-6 max-w-md">
-              Top courses and learning paths created by industry experts. Join
-              thousands of students building their career with our platform.
+              We prepare you to engage in the world that is and to help bring
+              about a world that ought to be.
             </p>
             <div className="flex flex-wrap items-center gap-4">
-              <button className="px-5 py-2.5 rounded-full bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 transition">
-                Start Learning
-              </button>
-              <button className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full border border-orange-300 flex items-center justify-center text-[10px]">
-                  ▶
-                </span>
-                Watch demo
+              <button className="px-7 py-3 rounded-full bg-orange-500 text-white text-sm font-semibold shadow-md hover:bg-orange-600 transition">
+                Get started
               </button>
             </div>
           </div>
 
-          <div className="relative flex justify-center">
-            <div className="w-56 h-56 md:w-64 md:h-64 rounded-[3rem] bg-[#ffe6d4] relative flex items-center justify-center">
-              <div className="w-40 h-40 rounded-[2rem] bg-gradient-to-br from-orange-300 to-pink-300 shadow-xl overflow-hidden flex items-center justify-center">
-                <span className="text-4xl font-black text-white">M</span>
-              </div>
-              <div className="absolute -top-4 -right-4 bg-white shadow-md rounded-2xl px-4 py-3 text-xs">
-                <div className="font-semibold">98k+</div>
-                <div className="text-gray-500">Active students</div>
-              </div>
-              <div className="absolute -bottom-4 -left-4 bg-white shadow-md rounded-full px-4 py-2 text-xs flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-orange-500 text-white text-[10px] flex items-center justify-center">
-                  ★
+          <div className="relative flex justify-end">
+            <div className="w-64 md:w-72 h-80 md:h-96 bg-[#ffc9a6] rounded-tl-[140px] rounded-bl-[140px] rounded-tr-[40px] rounded-br-[40px] flex items-center justify-center overflow-hidden shadow-lg">
+              {/* Replace the div below with your actual hero image */}
+              <div className="w-full h-full bg-gradient-to-t from-orange-200 via-orange-100 to-white flex items-center justify-center">
+                <span className="text-sm font-semibold text-orange-500 opacity-80">
+                  Hero Image Here
                 </span>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-xs">4.9</span>
-                  <span className="text-[10px] text-gray-500">Course rating</span>
-                </div>
               </div>
             </div>
+            <button className="absolute right-5 bottom-6 w-9 h-9 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-lg">
+              ↑
+            </button>
           </div>
         </section>
 
         {/* 3 Feature Cards */}
-        <section className="grid md:grid-cols-3 gap-5 pb-10">
+        <section className="grid md:grid-cols-3 gap-6 pb-16">
           {[
             {
               title: "Live class with experts",
@@ -282,11 +345,12 @@ export default function AdminDashboardPage() {
             <h3 className="text-sm font-semibold mb-3">
               Register for upcoming competition
             </h3>
-            <form className="space-y-3 text-xs">
+            <form className="space-y-3 text-xs" onSubmit={handleCompetitionSubmit}>
               <div>
                 <label className="block mb-1 text-gray-600">Full name</label>
                 <input
                   type="text"
+                  name="fullName"
                   className="w-full rounded-xl border border-orange-100 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-orange-400 bg-[#fffaf5]"
                   placeholder="Enter your full name"
                 />
@@ -295,13 +359,17 @@ export default function AdminDashboardPage() {
                 <label className="block mb-1 text-gray-600">Email</label>
                 <input
                   type="email"
+                  name="email"
                   className="w-full rounded-xl border border-orange-100 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-orange-400 bg-[#fffaf5]"
                   placeholder="name@example.com"
                 />
               </div>
               <div>
                 <label className="block mb-1 text-gray-600">Category</label>
-                <select className="w-full rounded-xl border border-orange-100 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-orange-400 bg-[#fffaf5]">
+                <select
+                  name="category"
+                  className="w-full rounded-xl border border-orange-100 px-3 py-2 text-xs outline-none focus:ring-1 focus:ring-orange-400 bg-[#fffaf5]"
+                >
                   <option>Design</option>
                   <option>Programming</option>
                   <option>Business</option>
@@ -310,10 +378,14 @@ export default function AdminDashboardPage() {
               </div>
               <button
                 type="submit"
-                className="w-full mt-2 px-4 py-2.5 rounded-full bg-orange-500 text-white text-xs font-semibold shadow hover:bg-orange-600"
+                disabled={isCompetitionSubmitting}
+                className="w-full mt-2 px-4 py-2.5 rounded-full bg-orange-500 text-white text-xs font-semibold shadow hover:bg-orange-600 disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Submit application
+                {isCompetitionSubmitting ? "Submitting..." : "Submit application"}
               </button>
+              {competitionMessage && (
+                <p className="text-[11px] text-green-600 mt-2">{competitionMessage}</p>
+              )}
             </form>
           </div>
         </section>
@@ -434,77 +506,6 @@ export default function AdminDashboardPage() {
           </div>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-[#151515] text-gray-300 mt-8 pt-10 pb-6">
-        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-4 gap-8 text-xs">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-extrabold text-sm">
-                M
-              </div>
-              <span className="font-bold text-sm text-white">MKS Academy</span>
-            </div>
-            <p className="text-[11px] text-gray-400 mb-4">
-              A modern learning management system for students, teachers and
-              professionals across the world.
-            </p>
-            <div className="flex gap-3 text-[11px]">
-              <span>Facebook</span>
-              <span>Twitter</span>
-              <span>LinkedIn</span>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-3">
-              Company
-            </h4>
-            <ul className="space-y-2 text-[11px] text-gray-400">
-              <li>About us</li>
-              <li>Contact</li>
-              <li>Careers</li>
-              <li>Blog</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-3">
-              Support
-            </h4>
-            <ul className="space-y-2 text-[11px] text-gray-400">
-              <li>Help center</li>
-              <li>FAQs</li>
-              <li>Terms &amp; conditions</li>
-              <li>Privacy policy</li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-3">
-              Stay up to date
-            </h4>
-            <p className="text-[11px] text-gray-400 mb-3">
-              Subscribe to get our latest news and offers.
-            </p>
-            <form className="flex flex-col gap-2 text-[11px]">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full rounded-full border border-gray-700 bg-[#202020] px-3 py-2 text-[11px] outline-none focus:ring-1 focus:ring-orange-500 text-gray-100"
-              />
-              <button className="w-full px-4 py-2 rounded-full bg-orange-500 text-white text-[11px] font-semibold hover:bg-orange-600">
-                Subscribe
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 mt-8 border-t border-gray-800 pt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-[11px] text-gray-500">
-          <span>© {new Date().getFullYear()} MKS Academy. All rights reserved.</span>
-          <span>Designed for your LMS project.</span>
-        </div>
-      </footer>
     </div>
   );
 }

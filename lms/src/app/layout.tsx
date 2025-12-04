@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Navbar from "@/components/Navbar";
-import PreFooter from "@/components/PreFooter";
-import Footer from "@/components/Footer";
 import "./globals.css";
+import ThemeProvider from "@/components/ThemeProvider";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,13 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LMS Platform",
-  description: "Learn Management System",
+  title: "9Tangle - Online Learning Platform",
+  description: "Learn in-demand skills from industry experts",
 };
-
-
-
-import ThemeProvider from "@/components/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -37,8 +33,6 @@ export default function RootLayout({
         <ThemeProvider>
           <Navbar />
           <main className="min-h-[calc(100vh-64px)]">{children}</main>
-          {/* Pre-footer CTA section */}
-          <PreFooter />
           <Footer />
         </ThemeProvider>
       </body>
