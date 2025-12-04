@@ -54,7 +54,7 @@ router.put('/me/password', requireAuth, validate(changePasswordValidation), asyn
 });
 
 // Admin: list users
-router.get('/', requireAuth, requireRole('admin', 'instructor'), async (_req: Request, res: Response) => {
+router.get('/', requireAuth, requireRole('admin'), async (_req: Request, res: Response) => {
   const list = await User.find({}).select('email firstName lastName role createdAt');
   res.json(list);
 });
@@ -63,7 +63,7 @@ router.get('/', requireAuth, requireRole('admin', 'instructor'), async (_req: Re
 router.get('/:id/enrollments', requireAuth, async (req: Request, res: Response) => {
   const requester = (req as any).user as { userId: string; role: string };
   const { id } = req.params;
-  if (requester.userId !== id && requester.role !== 'admin' && requester.role !== 'instructor') {
+  if (requester.userId !== id && requester.role !== 'admin') {
     return res.status(403).json({ message: 'Forbidden' });
   }
   const enrollments = await Enrollment.find({ student: id })

@@ -27,7 +27,7 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const hashed = await hashPassword(password);
-    // Always set role to 'student' - admin and instructor roles cannot be assigned through registration
+    // Always set role to 'student' - admin role cannot be assigned through registration
     const newUser = new User({ email, password: hashed, firstName, lastName, role: 'student' });
     await newUser.save();
 
@@ -53,15 +53,10 @@ export const loginUser = async (req: Request, res: Response) => {
     const ADMIN_EMAIL = 'admin@9tangle.com';
     const ADMIN_PASSWORD = 'Admin@9tangle2025!';
 
-    // Hardcoded Instructor credentials
-    const INSTRUCTOR_EMAIL = 'instructor@lms.com';
-    const INSTRUCTOR_PASSWORD = 'Instructor@2024';
 
     // Check for admin credentials
     const isAdminLogin = email?.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD;
 
-    // Check for instructor credentials
-    const isInstructorLogin = email?.toLowerCase().trim() === INSTRUCTOR_EMAIL.toLowerCase() && password === INSTRUCTOR_PASSWORD;
 
     if (isAdminLogin) {
       // Find or create admin user
@@ -106,50 +101,6 @@ export const loginUser = async (req: Request, res: Response) => {
       });
     }
 
-    if (isInstructorLogin) {
-      // Find or create instructor user
-      let instructorUser = await User.findOne({ email: INSTRUCTOR_EMAIL });
-
-      if (!instructorUser) {
-        // Create instructor user if doesn't exist
-        const { hashPassword } = await import('../utils/Passwordhash.ts');
-        const hashedPassword = await hashPassword(INSTRUCTOR_PASSWORD);
-        instructorUser = new User({
-          email: INSTRUCTOR_EMAIL,
-          password: hashedPassword,
-          firstName: 'Course',
-          lastName: 'Instructor',
-          role: 'instructor',
-          isVerified: true,
-        });
-        await instructorUser.save();
-      } else {
-        // Ensure existing user is instructor
-        if (instructorUser.role !== 'instructor') {
-          instructorUser.role = 'instructor';
-          instructorUser.firstName = 'Course';
-          instructorUser.lastName = 'Instructor';
-          await instructorUser.save();
-        }
-      }
-
-      const token = generateToken({
-        userId: instructorUser._id.toString(),
-        email: instructorUser.email,
-        role: 'instructor'
-      });
-
-      return res.status(200).json({
-        token,
-        user: {
-          id: instructorUser._id,
-          email: instructorUser.email,
-          firstName: instructorUser.firstName,
-          lastName: instructorUser.lastName,
-          role: 'instructor'
-        }
-      });
-    }
 
     // Regular user login
     const user = await User.findOne({ email });
@@ -189,7 +140,7 @@ export const promoteUserRole = async (req: Request, res: Response) => {
     if (process.env.NODE_ENV !== 'development' && secret !== DEV_SECRET) {
       return res.status(403).json({ message: 'Forbidden' });
     }
-    if (!['student','instructor','admin'].includes(role)) {
+    if (!['student','admin'].includes(role)) {
       return res.status(400).json({ message: 'Invalid role' });
     }
     const user = await User.findOneAndUpdate({ email }, { role }, { new: true });

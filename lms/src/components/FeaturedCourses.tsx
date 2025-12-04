@@ -283,13 +283,6 @@ export default function FeaturedCourses() {
                     </div>
                   </div>
 
-                  {/* Instructor */}
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-xs shadow-md">
-                      {course.instructor.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <span className="font-medium">by {course.instructor}</span>
-                  </div>
 
                   {/* Rating & Students */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -419,15 +412,6 @@ export default function FeaturedCourses() {
 
                 {/* Course Details */}
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-xl p-5">
-                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Instructor</div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
-                        {selectedCourse.instructor.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div className="font-semibold text-gray-900 dark:text-white">{selectedCourse.instructor}</div>
-                    </div>
-                  </div>
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-xl p-5">
                     <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">Includes</div>
                     <div className="space-y-2">

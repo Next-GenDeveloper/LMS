@@ -11,7 +11,7 @@ export interface IUser extends Document {
   profilePicture?: string;
   bio?: string;
   phone?: string;
-  role: 'student' | 'instructor' | 'admin';
+  role: 'student' | 'admin';
   isVerified: boolean;
   verificationToken?: string;
   preferences?: {
@@ -32,7 +32,7 @@ const userSchema = new Schema<IUser>(
     profilePicture: { type: String },
     bio: { type: String },
     phone: { type: String },
-    role: { type: String, enum: ['student', 'instructor', 'admin'], default: 'student' },
+    role: { type: String, enum: ['student', 'admin'], default: 'student' },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
     preferences: {
@@ -61,7 +61,7 @@ export const UserPostgres = sequelize.define('User', {
   firstName: DataTypes.STRING,
   lastName: DataTypes.STRING,
   role: {
-    type: DataTypes.ENUM('student', 'instructor', 'admin'),
+    type: DataTypes.ENUM('student', 'admin'),
     defaultValue: 'student',
   },
   isActive: {

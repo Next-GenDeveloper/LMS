@@ -78,7 +78,7 @@ export default function CoursesPage() {
             </p>
             <div className="flex flex-wrap gap-3 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
               <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
-                Top instructors
+                Top courses
               </span>
               <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
                 Certificates

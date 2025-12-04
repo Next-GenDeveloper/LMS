@@ -19,7 +19,6 @@ const courseData: Record<string, Course> = {
       rating: 4.9,
     },
     rating: 4.9,
-    reviews: 1240,
     students: 15234,
     price: 49,
     originalPrice: 99,
@@ -303,18 +302,6 @@ export default function CourseDetailPage({
               <span>{course.duration}</span>
             </div>
 
-            {/* Instructor */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                {course.instructor.avatar}
-              </div>
-              <div>
-                <p className="text-white font-medium text-sm sm:text-base">
-                  {course.instructor.name}
-                </p>
-                <p className="text-white/70 text-xs sm:text-sm">Instructor</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -374,30 +361,6 @@ export default function CourseDetailPage({
                   </ul>
                 </div>
 
-                {/* Instructor */}
-                <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border">
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
-                    Instructor
-                  </h2>
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl flex-shrink-0">
-                      {course.instructor.avatar}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-base sm:text-lg">
-                        {course.instructor.name}
-                      </h3>
-                      <p className="text-sm text-slate-600 mt-1">
-                        {course.instructor.bio}
-                      </p>
-                      <div className="flex flex-wrap gap-4 mt-3 text-xs sm:text-sm text-slate-500">
-                        <span>⭐ {course.instructor.rating} Rating</span>
-                        <span>📚 {course.instructor.courses} Courses</span>
-                        <span>👥 {course.instructor.students.toLocaleString()} Students</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             )}
 

@@ -17,7 +17,7 @@ const app = express();
 // Middleware
 app.use(cors()); // Enable CORS
 app.use(helmet()); // Security middleware
-app.use(bodyParser.json()); // JSON parsing
+app.use(bodyParser.json({ limit: '10mb' })); // JSON parsing
 app.use(bodyParser.urlencoded({ extended: true })); // Form data parsing
 
 // Serve static files from uploads directory

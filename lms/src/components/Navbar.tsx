@@ -60,12 +60,6 @@ export default function Navbar() {
             Courses
           </Link>
           <Link
-            href="/instructors"
-            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
-          >
-            Instructors
-          </Link>
-          <Link
             href="/contact"
             className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
           >
@@ -198,13 +192,6 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Courses
-            </Link>
-            <Link
-              href="/instructors"
-              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Instructors
             </Link>
             <Link
               href="/contact"

@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { useRequireInstructor } from "@/lib/use-require-instructor";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 interface AdminUser { _id: string; email: string; firstName: string; lastName: string; role: string; createdAt: string; }
 
 export default function AdminUsersPage() {
-  useRequireInstructor();
+  useRequireAdmin();
   const [items, setItems] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");

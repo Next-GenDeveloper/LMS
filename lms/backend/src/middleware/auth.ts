@@ -14,7 +14,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export function requireRole(...roles: Array<'student'|'instructor'|'admin'>) {
+export function requireRole(...roles: Array<'student'|'admin'>) {
   return function(req: Request, res: Response, next: NextFunction) {
     const user = (req as any).user as { role?: string } | undefined;
     if (!user) return res.status(401).json({ message: 'Unauthorized' });

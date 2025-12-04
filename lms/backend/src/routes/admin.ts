@@ -8,11 +8,11 @@ import { Announcement } from '../models/Announcement.ts';
 import { hashPassword, comparePassword } from '../utils/Passwordhash.ts';
 const router = Router();
 
-router.get('/', requireAuth, requireRole('admin','instructor'), (req: Request, res: Response) => {
+router.get('/', requireAuth, requireRole('admin'), (req: Request, res: Response) => {
   res.json({ message: 'Admin endpoint', user: (req as any).user });
 });
 
-router.get('/stats', requireAuth, requireRole('admin','instructor'), async (_req: Request, res: Response) => {
+router.get('/stats', requireAuth, requireRole('admin'), async (_req: Request, res: Response) => {
   try {
     const [users, courses, enrollments] = await Promise.all([
       User.countDocuments({ role: 'student' }),
@@ -48,7 +48,6 @@ router.get('/enrollments', requireAuth, requireRole('admin'), async (_req: Reque
 router.get('/courses', requireAuth, requireRole('admin'), async (_req: Request, res: Response) => {
   try {
     const courses = await Course.find({})
-      .populate('instructor', 'firstName lastName email')
       .sort({ createdAt: -1 });
 
     res.json({ courses });
@@ -95,7 +94,6 @@ router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, 
       title,
       description,
       thumbnail,
-      instructor: user.userId,
       category,
       price: Number(price),
       level,
@@ -118,8 +116,7 @@ router.put('/courses/:id', requireAuth, requireRole('admin'), async (req: Reques
     const { id } = req.params;
     const updates = req.body;
 
-    const course = await Course.findByIdAndUpdate(id, updates, { new: true })
-      .populate('instructor', 'firstName lastName email');
+    const course = await Course.findByIdAndUpdate(id, updates, { new: true });
 
     if (!course) {
       return res.status(404).json({ message: 'Course not found' });

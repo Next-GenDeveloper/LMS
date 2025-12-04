@@ -219,17 +219,17 @@ export default function Home() {
               name: 'Ayesha',
               role: 'Front-end dev',
               body: 'The hands‑on classes boosted my confidence for job interviews.',
-              img: '/uploads/avatar1.jpg',
+              img: '/next.svg',
             }, {
               name: 'Zain',
               role: 'Data Scientist',
               body: 'Course content was excellent, plus the support team is super helpful!',
-              img: '/uploads/avatar2.jpg',
+              img: '/vercel.svg',
             }, {
               name: 'Faiza',
               role: 'UX Designer',
               body: 'Thanks to MKS Academy, I now work for my dream company.',
-              img: '/uploads/avatar3.jpg',
+              img: '/globe.svg',
             }].map((t, i) => (
               <div
                 key={t.name}
@@ -267,32 +267,32 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                img: "/uploads/blog1.jpg",
+                img: '/next.svg',
                 tag: "Productivity",
                 tagColor: "bg-green-100 text-green-700",
                 title: "How to stay productive while learning",
                 desc: "Strategies to focus, avoid burnout, and get results as an online learner.",
-                author: "/uploads/avatar1.jpg",
+                author: '/next.svg',
                 name: "Ayesha",
                 date: "May 10, 2025",
               },
               {
-                img: "/uploads/blog2.jpg",
+                img: '/vercel.svg',
                 tag: "News",
                 tagColor: "bg-blue-100 text-blue-700",
                 title: "Upcoming courses & events this summer",
                 desc: "Discover the latest launches and special events from MKS Academy.",
-                author: "/uploads/avatar2.jpg",
+                author: '/vercel.svg',
                 name: "Academy Admin",
                 date: "May 3, 2025",
               },
               {
-                img: "/uploads/blog3.jpg",
+                img: '/globe.svg',
                 tag: "Inspiration",
                 tagColor: "bg-orange-100 text-orange-600",
                 title: "Success stories from our top learners",
                 desc: "Read about real students who landed jobs and higher salaries via our platform.",
-                author: "/uploads/avatar3.jpg",
+                author: '/globe.svg',
                 name: "Faiza",
                 date: "April 28, 2025",
               },

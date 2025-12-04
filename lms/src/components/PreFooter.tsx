@@ -12,7 +12,7 @@ export default function PreFooter() {
             Level up your learning with 9tangle
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-prose">
-            Join thousands of learners and instructors using our modern LMS. Build skills, track progress, and achieve your goals.
+            Join thousands of learners using our modern LMS. Build skills, track progress, and achieve your goals.
           </p>
         </div>
         <div className="flex flex-wrap gap-3 justify-start lg:justify-end">

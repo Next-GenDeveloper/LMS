@@ -15,7 +15,7 @@ const TESTIMONIALS = [
     name: "Muhammad Ali",
     role: "CS Student",
     text:
-      "Instructors explain concepts really well. The progress tracking and quizzes kept me motivated!",
+      "The courses explain concepts really well. The progress tracking and quizzes kept me motivated!",
     avatar: "M",
     rating: 5,
   },

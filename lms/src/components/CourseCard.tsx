@@ -1,6 +1,14 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { API_BASE } from "@/lib/api";
+
+function getImageUrl(url: string): string {
+  if (url.startsWith('/uploads/')) {
+    return `${API_BASE}${url}`;
+  }
+  return url;
+}
 
 export type Course = {
   id: string;
@@ -26,7 +34,7 @@ export default function CourseCard({ course, onClick }: { course: Course; onClic
       className="group rounded-xl border overflow-hidden bg-white/70 dark:bg-white/5 backdrop-blur hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
     >
       <div className="relative h-40 w-full overflow-hidden">
-        <Image src={course.imageUrl || course.thumbnail || "/next.svg"} alt={course.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+        <Image src={getImageUrl(course.imageUrl || course.thumbnail || "/next.svg")} alt={course.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
       </div>
       <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">

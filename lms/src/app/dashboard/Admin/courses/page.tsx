@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { useRequireInstructor } from "@/lib/use-require-instructor";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 interface CourseItem { id: string; title: string; description: string; price: number; thumbnail?: string; category?: string; isPublished?: boolean; }
 
 export default function AdminCoursesPage() {
-  useRequireInstructor();
+  useRequireAdmin();
   const [items, setItems] = useState<CourseItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");

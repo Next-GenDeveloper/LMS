@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 const items = [
   { name: 'Ayesha', role: 'Developer', text: 'Best platform to upskill. The UI is clean and learning is fun!'},
-  { name: 'Ali', role: 'Student', text: 'Courses are well structured and instructors are amazing.'},
+  { name: 'Ali', role: 'Student', text: 'Courses are well structured and amazing.'},
   { name: 'Sara', role: 'Designer', text: 'Love the minimal design and the course quality.'},
 ];
 

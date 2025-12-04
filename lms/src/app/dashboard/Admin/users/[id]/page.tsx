@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { useParams } from "next/navigation";
-import { useRequireInstructor } from "@/lib/use-require-instructor";
+import { useRequireAdmin } from "@/lib/use-require-admin";
 
 interface EnrollmentItem { status: string; progress: number; enrollmentDate: string; completionDate?: string; course?: { title: string; price: number; category?: string; thumbnail?: string } }
 
 export default function AdminUserDetailPage() {
-  useRequireInstructor();
+  useRequireAdmin();
   const params = useParams();
   const id = String(params?.id || "");
   const [items, setItems] = useState<EnrollmentItem[]>([]);

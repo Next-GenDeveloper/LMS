@@ -82,8 +82,8 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Create course (instructor only)
-router.post('/', requireAuth, requireRole('instructor'), async (req: Request, res: Response) => {
+// Create course (admin only)
+router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { title, description, price, thumbnail, category } = req.body || {};
     if (!title || !description) return res.status(400).json({ message: 'title and description are required' });
@@ -94,7 +94,6 @@ router.post('/', requireAuth, requireRole('instructor'), async (req: Request, re
       price: Number(price) || 0,
       thumbnail: thumbnail || '',
       category: category || 'General',
-      instructor,
       isPublished: false,
     });
     res.status(201).json({ id: course._id });
@@ -103,8 +102,8 @@ router.post('/', requireAuth, requireRole('instructor'), async (req: Request, re
   }
 });
 
-// Update course (instructor only)
-router.put('/:id', requireAuth, requireRole('instructor'), async (req: Request, res: Response) => {
+// Update course (admin only)
+router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const payload = req.body || {};
@@ -116,8 +115,8 @@ router.put('/:id', requireAuth, requireRole('instructor'), async (req: Request, 
   }
 });
 
-// Delete course (instructor only)
-router.delete('/:id', requireAuth, requireRole('instructor'), async (req: Request, res: Response) => {
+// Delete course (admin only)
+router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
     const deleted = await Course.findByIdAndDelete(id);

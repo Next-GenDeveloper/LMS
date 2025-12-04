@@ -46,7 +46,7 @@ const upload = multer({
 });
 
 // Upload single file
-router.post('/file', requireAuth, requireRole('instructor'), upload.single('file'), (req: Request, res: Response) => {
+router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (req: Request, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -66,7 +66,7 @@ router.post('/file', requireAuth, requireRole('instructor'), upload.single('file
 });
 
 // Upload multiple files
-router.post('/files', requireAuth, requireRole('instructor'), upload.array('files', 10), (req: Request, res: Response) => {
+router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 10), (req: Request, res: Response) => {
   try {
     if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });
