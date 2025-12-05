@@ -1,4 +1,4 @@
-const isBrowser = typeof window !== 'undefined';
+Ijaz45_@11const isBrowser = typeof window !== 'undefined';
 const host = isBrowser ? window.location.hostname : '';
 const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
 const DEFAULT_DEV_BASE = isBrowser && isLocal ? 'http://localhost:5000' : '';

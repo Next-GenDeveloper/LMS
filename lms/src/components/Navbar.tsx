@@ -72,7 +72,7 @@ export default function Navbar() {
           {isLoggedIn ? (
             <>
               <Link
-                href="/dashboard/Student"
+                href="/my-learning"
                 className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
               >
                 My Learning

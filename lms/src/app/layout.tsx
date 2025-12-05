@@ -32,8 +32,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <Navbar />
-          <main className="min-h-[calc(100vh-64px)]">{children}</main>
-          <Footer />
+          <main className="min-h-screen">{children}</main>
         </ThemeProvider>
       </body>
     </html>
