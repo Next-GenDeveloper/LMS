@@ -1,4 +1,4 @@
-Ijaz45_@11const isBrowser = typeof window !== 'undefined';
+const isBrowser = typeof window !== 'undefined';
 const host = isBrowser ? window.location.hostname : '';
 const isLocal = host === 'localhost' || host === '127.0.0.1' || host === '::1';
 const DEFAULT_DEV_BASE = isBrowser && isLocal ? 'http://localhost:5000' : '';
@@ -25,17 +25,14 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
       return res.json() as Promise<T>;
     };
 
-    // First try relative path through Next.js rewrites (avoid direct cross-origin errors in dev)
-    try {
-      const relative = path.startsWith('/') ? path : `/${path}`;
-      return await doFetch(relative);
-    } catch (e1) {
-      // Fallback: try the configured absolute base URL
-      if (API_BASE) {
-        return await doFetch(url);
-      }
-      throw e1;
+    // If API_BASE is configured, use it directly to avoid double requests
+    if (API_BASE) {
+      return await doFetch(url);
     }
+
+    // Otherwise, try relative path through Next.js rewrites
+    const relative = path.startsWith('/') ? path : `/${path}`;
+    return await doFetch(relative);
   } catch (err: any) {
     const tip = !API_BASE
       ? 'Set NEXT_PUBLIC_BACKEND_URL in .env.local (e.g., http://localhost:5000) or rely on Next.js rewrites'

@@ -4,6 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth.ts';
 import { User } from '../models/User.ts';
 import { Enrollment } from '../models/Enrollment.ts';
 import { Course } from '../models/Course.ts';
+import { userProfileValidation, changePasswordValidation, validate } from '../utils/Validators.ts';
 
 const router = Router();
 
@@ -16,7 +17,7 @@ router.get('/me', requireAuth, async (req: Request, res: Response) => {
 });
 
 // Update current user profile
-router.put('/me', requireAuth, async (req: Request, res: Response) => {
+router.put('/me', requireAuth, validate(userProfileValidation), async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
   const { firstName, lastName, bio, profilePicture, phone, email, preferences } = req.body || {};
   const update: any = { firstName, lastName, bio, profilePicture, phone, preferences };
@@ -31,8 +32,6 @@ router.put('/me', requireAuth, async (req: Request, res: Response) => {
 });
 
 // Change password
-import { changePasswordValidation, validate } from '../utils/Validators.ts';
-
 router.put('/me/password', requireAuth, validate(changePasswordValidation), async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
   const { currentPassword, newPassword } = req.body || {};

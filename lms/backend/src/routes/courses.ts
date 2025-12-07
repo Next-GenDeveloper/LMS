@@ -94,7 +94,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
       price: Number(price) || 0,
       thumbnail: thumbnail || '',
       category: category || 'General',
-      isPublished: false,
+      isPublished: true,
     });
     res.status(201).json({ id: course._id });
   } catch (e: any) {

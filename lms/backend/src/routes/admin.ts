@@ -84,6 +84,220 @@ router.get('/users', requireAuth, requireRole('admin'), async (req: Request, res
   }
 });
 
+// Create new user (admin only)
+router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { firstName, lastName, email, password, role = 'student', phone, bio } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User with this email already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    const user = new User({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      role,
+      phone: phone?.trim(),
+      bio: bio?.trim(),
+      isVerified: true, // Admin-created users are auto-verified
+    });
+
+    await user.save();
+
+    // Return user without password
+    const userResponse = await User.findById(user._id).select('-password');
+    res.status(201).json({ user: userResponse });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to create user' });
+  }
+});
+
+// Get single user details (admin only)
+router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ user });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to fetch user' });
+  }
+});
+
+// Update user (admin only)
+router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, email, role, phone, bio, isVerified } = req.body;
+
+    const updateData: any = {
+      firstName: firstName?.trim(),
+      lastName: lastName?.trim(),
+      role,
+      phone: phone?.trim(),
+      bio: bio?.trim(),
+      isVerified,
+    };
+
+    // Only update email if it's changed and doesn't conflict
+    if (email && email.toLowerCase().trim() !== (await User.findById(id)).email) {
+      const existingUser = await User.findOne({
+        email: email.toLowerCase().trim(),
+        _id: { $ne: id }
+      });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already in use by another user' });
+      }
+      updateData.email = email.toLowerCase().trim();
+    }
+
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to update user' });
+  }
+});
+
+// Delete user (admin only)
+router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent deleting admin users
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Cannot delete admin users' });
+    }
+
+    await User.findByIdAndDelete(id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to delete user' });
+  }
+});
+
+// Create new user (admin only)
+router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { email, firstName, lastName, password, role = 'student', phone, bio } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User with this email already exists' });
+    }
+
+    // Hash password
+    const hashedPassword = await hashPassword(password);
+
+    const user = new User({
+      email,
+      firstName,
+      lastName,
+      password: hashedPassword,
+      role,
+      phone,
+      bio,
+      preferences: {
+        interests: [],
+        preferredLanguage: 'en',
+        notifications: true
+      }
+    });
+
+    await user.save();
+
+    // Return user without password
+    const userResponse = await User.findById(user._id).select('-password');
+    res.status(201).json({ user: userResponse });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to create user' });
+  }
+});
+
+// Update user by ID (admin only)
+router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { email, firstName, lastName, role, phone, bio, preferences } = req.body;
+
+    const updateData: any = {};
+    if (email !== undefined) updateData.email = email;
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
+    if (role !== undefined) updateData.role = role;
+    if (phone !== undefined) updateData.phone = phone;
+    if (bio !== undefined) updateData.bio = bio;
+    if (preferences !== undefined) updateData.preferences = preferences;
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to update user' });
+  }
+});
+
+// Delete user by ID (admin only)
+router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent deleting admin users
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Cannot delete admin users' });
+    }
+
+    await User.findByIdAndDelete(id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to delete user' });
+  }
+});
+
+// Get single user by ID (admin only)
+router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ user });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to fetch user' });
+  }
+});
+
 // Course CRUD
 router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
@@ -101,7 +315,7 @@ router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, 
       language,
       tags: tags || [],
       modules: modules || [],
-      isPublished: false
+      isPublished: true
     });
 
     await course.save();

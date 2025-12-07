@@ -24,12 +24,25 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
+// Password validation helper
+const getPasswordRequirements = (password: string) => {
+  const requirements = [
+    { test: /.{8,}/.test(password), message: 'At least 8 characters long' },
+    { test: /[A-Z]/.test(password), message: 'One uppercase letter' },
+    { test: /[a-z]/.test(password), message: 'One lowercase letter' },
+    { test: /[0-9]/.test(password), message: 'One number' },
+    { test: /[^A-Za-z0-9]/.test(password), message: 'One special character' },
+  ];
+  return requirements;
+};
+
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValue, setPasswordValue] = useState('');
 
   const {
     register,
@@ -46,10 +59,12 @@ export default function RegisterForm() {
     setIsLoading(true);
     try {
       // Client-side password validation
-      const p = data.password || '';
-      const ok = /.{8,}/.test(p) && /[A-Z]/.test(p) && /[a-z]/.test(p) && /[0-9]/.test(p) && /[^A-Za-z0-9]/.test(p);
-      if (!ok) {
-        alert('Password must be 8+ chars with uppercase, lowercase, digit and special character.');
+      const requirements = getPasswordRequirements(data.password || '');
+      const unmetRequirements = requirements.filter(req => !req.test);
+
+      if (unmetRequirements.length > 0) {
+        const messages = unmetRequirements.map(req => req.message);
+        alert(`Password must meet the following requirements:\n• ${messages.join('\n• ')}`);
         setIsLoading(false);
         return;
       }
@@ -60,6 +75,10 @@ export default function RegisterForm() {
         setIsLoading(false);
         return;
       }
+
+      // Clear any existing profile data from previous users
+      localStorage.removeItem('userProfile');
+      localStorage.removeItem('profileDraft');
 
       let result: any = null;
       try {
@@ -84,7 +103,7 @@ export default function RegisterForm() {
         const [first, ...rest] = data.fullName.split(' ');
         const last = rest.join(' ');
         localStorage.setItem('userProfile', JSON.stringify({ firstName: first, lastName: last, email: data.email }));
-        window.location.href = '/dashboard/Student';
+        window.location.href = '/my-learning';
         return;
       }
 
@@ -100,7 +119,7 @@ export default function RegisterForm() {
           const last = rest.join(' ');
           localStorage.setItem('userProfile', JSON.stringify({ firstName: first, lastName: last, email: data.email }));
         }
-        window.location.href = '/dashboard/Student';
+        window.location.href = '/my-learning';
       } else {
         throw new Error('Registration failed: No token received');
       }
@@ -122,53 +141,45 @@ export default function RegisterForm() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ffe9d6] via-[#ffd1a1] to-[#ffb46b] py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Background decorations */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
-
-        <div className="max-w-5xl w-full relative z-10">
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
-            <div className="lg:grid lg:grid-cols-2">
+      <div className="min-h-screen animate-gradient-wave flex items-center justify-center px-4 py-8 pb-16">
+        <div className="w-full max-w-5xl bg-card/95 backdrop-blur-sm rounded-3xl shadow-2xl grid lg:grid-cols-2 overflow-hidden border border-border animate-fade-in-up">
               {/* Left Side - Branding */}
-              <div className="hidden lg:flex bg-gradient-to-br from-orange-400 to-amber-400 p-12 flex-col justify-between text-white relative overflow-hidden">
+              <div className="hidden lg:flex bg-gradient-to-br from-primary to-accent p-12 flex-col justify-between text-primary-foreground relative overflow-hidden">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
-                
+                <div className="absolute top-0 right-0 w-64 h-64 bg-card/5 rounded-full blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-card/5 rounded-full blur-3xl" />
+
                 <div className="relative z-10">
                   <div className="flex items-center space-x-3 mb-12 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                    <div className="w-14 h-14 rounded-2xl bg-white text-orange-500 backdrop-blur flex items-center justify-center shadow-lg">
+                    <div className="w-14 h-14 rounded-2xl bg-card text-primary backdrop-blur flex items-center justify-center shadow-lg">
                       <span className="text-xl font-extrabold tracking-tight">9T</span>
                     </div>
                     <div>
                       <h1 className="text-3xl font-bold">9Tangle</h1>
-                      <p className="text-sm text-white/80">Online Learning Platform</p>
+                      <p className="text-sm text-primary-foreground/80">Online Learning Platform</p>
                     </div>
                   </div>
                   <h2 className="text-5xl font-extrabold mb-6 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     Create your free account
                   </h2>
-                  <p className="text-xl text-white/90 mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                  <p className="text-xl text-primary-foreground/90 mb-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                     Join thousands of students already learning with our expert‑led courses.
                   </p>
                   <div className="space-y-5 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                    <div className="flex items-center gap-4 p-3 rounded-xl bg-white/10 backdrop-blur hover:bg-white/15 transition-all">
-                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-lg">
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-card/10 backdrop-blur hover:bg-card/15 transition-all">
+                      <div className="w-12 h-12 rounded-full bg-card/20 flex items-center justify-center shadow-lg">
                         <span className="text-xl">✓</span>
                       </div>
                       <p className="font-medium">Access to 1000+ courses</p>
                     </div>
-                    <div className="flex items-center gap-4 p-3 rounded-xl bg-white/10 backdrop-blur hover:bg-white/15 transition-all">
-                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-lg">
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-card/10 backdrop-blur hover:bg-card/15 transition-all">
+                      <div className="w-12 h-12 rounded-full bg-card/20 flex items-center justify-center shadow-lg">
                         <span className="text-xl">✓</span>
                       </div>
                       <p className="font-medium">Learn at your own pace</p>
                     </div>
-                    <div className="flex items-center gap-4 p-3 rounded-xl bg-white/10 backdrop-blur hover:bg-white/15 transition-all">
-                      <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center shadow-lg">
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-card/10 backdrop-blur hover:bg-card/15 transition-all">
+                      <div className="w-12 h-12 rounded-full bg-card/20 flex items-center justify-center shadow-lg">
                         <span className="text-xl">✓</span>
                       </div>
                       <p className="font-medium">Get certified & advance your career</p>
@@ -176,20 +187,20 @@ export default function RegisterForm() {
                   </div>
                 </div>
                 <div className="relative z-10 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-                  <div className="p-4 rounded-xl bg-white/10 backdrop-blur">
-                    <p className="text-white/90 italic mb-2">"Best platform to upskill and grow!"</p>
-                    <p className="text-white/70 text-sm">– Alex M., Developer</p>
+                  <div className="p-4 rounded-xl bg-card/10 backdrop-blur">
+                    <p className="text-primary-foreground/90 italic mb-2">"Best platform to upskill and grow!"</p>
+                    <p className="text-primary-foreground/70 text-sm">– Alex M., Developer</p>
                   </div>
                 </div>
               </div>
 
               {/* Right Side - Registration Form */}
-              <div className="p-8 lg:p-12 bg-white">
+              <div className="p-8 lg:p-12 bg-card">
                 <div className="mb-8">
-                  <h2 className="text-3xl font-extrabold text-slate-900 mb-2">
+                  <h2 className="text-3xl font-extrabold text-foreground mb-2">
                     Sign up to 9Tangle
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     Join our learning platform today and start your journey.
                   </p>
                 </div>
@@ -197,11 +208,11 @@ export default function RegisterForm() {
                 <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
                   {/* Full Name */}
                   <div className="space-y-2">
-                    <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700">
+                    <label htmlFor="fullName" className="block text-sm font-semibold text-foreground">
                       Full Name
                     </label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#0053b8] transition-colors">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -210,22 +221,22 @@ export default function RegisterForm() {
                         {...register('fullName')}
                         type="text"
                         autoComplete="name"
-                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground transition-all"
                         placeholder="John Doe"
                       />
                     </div>
                     {errors.fullName && (
-                      <p className="text-sm text-red-600 font-medium">{errors.fullName.message}</p>
+                      <p className="text-sm text-destructive font-medium">{errors.fullName.message}</p>
                     )}
                   </div>
 
                   {/* Email */}
                   <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700">
+                    <label htmlFor="email" className="block text-sm font-semibold text-foreground">
                       Email Address
                     </label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#0053b8] transition-colors">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
                         </svg>
@@ -234,22 +245,22 @@ export default function RegisterForm() {
                         {...register('email')}
                         type="email"
                         autoComplete="email"
-                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                        className="w-full pl-12 pr-4 h-14 text-base border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground transition-all"
                         placeholder="you@example.com"
                       />
                     </div>
                     {errors.email && (
-                      <p className="text-sm text-red-600 font-medium">{errors.email.message}</p>
+                      <p className="text-sm text-destructive font-medium">{errors.email.message}</p>
                     )}
                   </div>
 
                   {/* Password */}
                   <div className="space-y-2">
-                    <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                    <label htmlFor="password" className="block text-sm font-semibold text-foreground">
                       Password
                     </label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#0053b8] transition-colors">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                         </svg>
@@ -258,13 +269,17 @@ export default function RegisterForm() {
                         {...register('password')}
                         type={showPassword ? 'text' : 'password'}
                         autoComplete="new-password"
-                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground transition-all"
                         placeholder="Create a strong password"
+                        onChange={(e) => {
+                          setPasswordValue(e.target.value);
+                          register('password').onChange(e);
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-orange-500 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-primary transition-colors"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? (
@@ -280,18 +295,28 @@ export default function RegisterForm() {
                       </button>
                     </div>
                     {errors.password && (
-                      <p className="text-sm text-red-600 font-medium">{errors.password.message}</p>
+                      <p className="text-sm text-destructive font-medium">{errors.password.message}</p>
                     )}
-                    <p className="text-xs text-gray-500">Must include uppercase, lowercase, digit and special character</p>
+                    {passwordValue && (
+                      <div className="text-xs space-y-1 mt-2">
+                        <p className="text-muted-foreground font-medium">Password requirements:</p>
+                        {getPasswordRequirements(passwordValue).map((req, index) => (
+                          <div key={index} className={`flex items-center gap-2 ${req.test ? 'text-green-600' : 'text-muted-foreground'}`}>
+                            <span className={`text-xs ${req.test ? '✓' : '○'}`}></span>
+                            <span>{req.message}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Confirm Password */}
                   <div className="space-y-2">
-                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700">
+                    <label htmlFor="confirmPassword" className="block text-sm font-semibold text-foreground">
                       Confirm Password
                     </label>
                     <div className="relative group">
-                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#0053b8] transition-colors">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -300,13 +325,13 @@ export default function RegisterForm() {
                         {...register('confirmPassword')}
                         type={showConfirmPassword ? 'text' : 'password'}
                         autoComplete="new-password"
-                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-orange-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                        className="w-full pl-12 pr-12 h-14 text-base border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground transition-all"
                         placeholder="Confirm your password"
                       />
                       <button
                         type="button"
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-orange-500 transition-colors"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-primary transition-colors"
                         aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                       >
                         {showConfirmPassword ? (
@@ -329,7 +354,7 @@ export default function RegisterForm() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full h-14 text-lg font-bold text-white bg-gradient-to-r from-orange-500 to-amber-400 rounded-xl hover:from-orange-600 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="w-full h-14 text-lg font-bold text-primary-foreground bg-gradient-to-r from-primary to-accent rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center gap-2">
@@ -345,15 +370,13 @@ export default function RegisterForm() {
                   </button>
 
                   <div className="text-center pt-4">
-                    <span className="text-gray-600">Already have an account? </span>
-                    <Link href="/auth/login" className="font-bold text-orange-500 hover:text-orange-600 transition-colors">
+                    <span className="text-muted-foreground">Already have an account? </span>
+                    <Link href="/auth/login" className="font-bold text-primary hover:text-primary/80 transition-colors">
                       Sign in here
                     </Link>
                   </div>
                 </form>
               </div>
-            </div>
-          </div>
         </div>
       </div>
     </>

@@ -1,9 +1,29 @@
 // src/app/page.tsx
+"use client";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import heroImage from "@/upload/hero-image.jpg";
+import PreFooter from "@/components/PreFooter";
+
+interface Announcement {
+  _id: string;
+  title: string;
+  message: string;
+  type: string;
+  createdAt: string;
+  createdBy: { firstName: string; lastName: string };
+}
 
 export default function Home() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/announcements")
+      .then(res => res.json())
+      .then(data => setAnnouncements(data.announcements || []))
+      .catch(err => console.error("Failed to fetch announcements", err));
+  }, []);
   return (
     <>
       {/* Hero - warm MKS style */}
@@ -57,6 +77,7 @@ export default function Home() {
                         src={heroImage}
                         alt="Hero Image"
                         className="w-full h-full object-cover"
+                        loading="eager"
                       />
                     </span>
                   </div>
@@ -105,6 +126,50 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Announcements Section */}
+      {announcements.length > 0 && (
+        <section className="py-10 bg-amber-50">
+          <div className="container mx-auto px-6">
+            <div className="text-center mb-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-400 mb-2">
+                Announcements
+              </p>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
+                Latest Updates
+              </h2>
+            </div>
+            <div className="space-y-4 max-w-4xl mx-auto">
+              {announcements.map((ann) => (
+                <div key={ann._id} className="bg-white rounded-lg border border-orange-100 p-6 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className={`w-3 h-3 rounded-full mt-2 ${
+                      ann.type === 'info' ? 'bg-blue-500' :
+                      ann.type === 'warning' ? 'bg-yellow-500' :
+                      ann.type === 'success' ? 'bg-green-500' :
+                      'bg-red-500'
+                    }`} />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-slate-900 mb-2">{ann.title}</h3>
+                      <p className="text-slate-600 mb-3">{ann.message}</p>
+                      <div className="text-xs text-slate-500">
+                        By {ann.createdBy.firstName} {ann.createdBy.lastName} • {new Date(ann.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* New Image Section */}
+      <section className="py-10 bg-white">
+        <div className="container mx-auto px-6">
+
         </div>
       </section>
 
@@ -185,8 +250,8 @@ export default function Home() {
         </div>
       </section>
 
-
-
+      {/* Pre-Footer Section */}
+      <PreFooter />
 
     </>
   );

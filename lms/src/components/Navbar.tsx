@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   useEffect(() => {
     // Check auth status on mount
@@ -16,7 +18,12 @@ export default function Navbar() {
       if (profile) {
         try {
           const p = JSON.parse(profile);
-          setUserName(p.firstName || "User");
+          setUserRole(p.role || "");
+          if (p.role === 'admin') {
+            setUserName("Logged in as Admin");
+          } else {
+            setUserName(p.firstName || "User");
+          }
         } catch {
           setUserName("User");
         }
@@ -27,20 +34,22 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userProfile");
+    localStorage.removeItem("profileDraft");
     setIsLoggedIn(false);
     setUserName("");
+    setUserRole("");
     window.location.href = "/";
   };
 
   return (
-    <header className="w-full border-b bg-white/90 backdrop-blur sticky top-0 z-50 shadow-sm">
+    <header className="w-full border-b bg-card/90 backdrop-blur sticky top-0 z-50 shadow-sm">
       <nav className="mx-auto flex h-14 sm:h-16 w-full max-w-6xl items-center justify-between px-3 sm:px-4">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-extrabold text-sm sm:text-base">
             9T
           </div>
-          <span className="font-bold text-base sm:text-lg tracking-tight text-slate-900">
+          <span className="font-bold text-base sm:text-lg tracking-tight text-foreground">
             9Tangle
           </span>
         </Link>
@@ -61,7 +70,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/contact"
-            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent transition"
           >
             Contact
           </Link>
@@ -69,16 +78,17 @@ export default function Navbar() {
 
         {/* Auth Buttons / User Menu */}
         <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <ThemeToggle />
           {isLoggedIn ? (
             <>
               <Link
                 href="/my-learning"
-                className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent transition"
               >
                 My Learning
               </Link>
               <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-orange-50 text-orange-600 font-medium text-sm">
+                <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-accent text-primary font-medium text-sm">
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
                     {userName.charAt(0).toUpperCase()}
                   </div>
@@ -97,10 +107,21 @@ export default function Navbar() {
                     />
                   </svg>
                 </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-orange-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <div className="absolute right-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <Link
-                    href="/dashboard/Student"
-                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500 rounded-t-xl"
+                    href={(() => {
+                      const profile = localStorage.getItem("userProfile");
+                      if (profile) {
+                        try {
+                          const p = JSON.parse(profile);
+                          return p.role === 'admin' ? "/admin/dashboard" : "/dashboard/Student";
+                        } catch {
+                          return "/dashboard/Student";
+                        }
+                      }
+                      return "/dashboard/Student";
+                    })()}
+                    className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary rounded-t-xl"
                   >
                     Dashboard
                   </Link>
@@ -112,14 +133,14 @@ export default function Navbar() {
                   </Link>
                   <Link
                     href="/my-learning"
-                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+                    className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary"
                   >
                     My Courses
                   </Link>
                   <hr className="border-orange-100" />
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-b-xl"
+                    className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 rounded-b-xl"
                   >
                     Logout
                   </button>
@@ -130,13 +151,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth/login"
-                className="px-4 py-2 rounded-full border border-orange-300 bg-white text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
+                className="px-4 py-2 rounded-full border border-border bg-card text-sm font-semibold text-primary hover:bg-accent transition"
               >
                 Login
               </Link>
               <Link
                 href="/auth/register"
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-sm font-semibold text-white shadow-sm hover:from-orange-600 hover:to-orange-500 transition"
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-primary to-primary/80 text-sm font-semibold text-primary-foreground shadow-sm hover:from-primary/90 hover:to-primary transition"
               >
                 Register
               </Link>
@@ -147,11 +168,11 @@ export default function Navbar() {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-orange-50 transition"
+          className="md:hidden p-2 rounded-lg hover:bg-accent transition"
           aria-label="Toggle menu"
         >
           <svg
-            className="w-6 h-6 text-slate-700"
+            className="w-6 h-6 text-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -177,11 +198,11 @@ export default function Navbar() {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-orange-100 animate-fade-in">
+        <div className="md:hidden bg-card border-t border-border animate-fade-in">
           <div className="px-4 py-4 space-y-1">
             <Link
               href="/"
-              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-foreground hover:bg-accent hover:text-primary transition"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
@@ -203,9 +224,9 @@ export default function Navbar() {
 
             {isLoggedIn && (
               <>
-                <hr className="border-orange-100 my-2" />
+                <hr className="border-border my-2" />
                 <Link
-                  href="/dashboard/Student"
+                  href={userRole === 'admin' ? "/admin/dashboard" : "/dashboard/Student"}
                   className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -228,14 +249,14 @@ export default function Navbar() {
               </>
             )}
 
-            <div className="pt-3 mt-2 border-t border-orange-100 space-y-2">
+            <div className="pt-3 mt-2 border-t border-border space-y-2">
               {isLoggedIn ? (
                 <button
                   onClick={() => {
                     handleLogout();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full py-2.5 rounded-full border border-red-300 text-sm font-semibold text-red-600 hover:bg-red-50 transition"
+                  className="w-full py-2.5 rounded-full border border-destructive text-sm font-semibold text-destructive hover:bg-destructive/10 transition"
                 >
                   Logout
                 </button>
@@ -243,14 +264,14 @@ export default function Navbar() {
                 <>
                   <Link
                     href="/auth/login"
-                    className="block w-full text-center py-2.5 rounded-full border border-orange-300 bg-white text-sm font-semibold text-orange-600 hover:bg-orange-50 transition"
+                    className="block w-full text-center py-2.5 rounded-full border border-border bg-card text-sm font-semibold text-primary hover:bg-accent transition"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Login
                   </Link>
                   <Link
                     href="/auth/register"
-                    className="block w-full text-center py-2.5 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-sm font-semibold text-white shadow-sm hover:from-orange-600 hover:to-orange-500 transition"
+                    className="block w-full text-center py-2.5 rounded-full bg-gradient-to-r from-primary to-primary/80 text-sm font-semibold text-primary-foreground shadow-sm hover:from-primary/90 hover:to-primary transition"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Register

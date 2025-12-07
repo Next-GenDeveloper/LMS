@@ -51,3 +51,16 @@ export const courseValidation = [
 export const enrollmentValidation = [
   body('courseId').notEmpty(),
 ];
+
+export const userProfileValidation = [
+  body('firstName').optional().isLength({ min: 1, max: 50 }).trim().escape(),
+  body('lastName').optional().isLength({ min: 1, max: 50 }).trim().escape(),
+  body('email').optional().isEmail().normalizeEmail(),
+  body('bio').optional().isLength({ max: 500 }).trim().escape(),
+  body('phone').optional().isMobilePhone('any').trim(),
+  body('profilePicture').optional().isURL().trim(),
+  body('preferences.interests').optional().isArray(),
+  body('preferences.interests.*').optional().isLength({ max: 50 }).trim().escape(),
+  body('preferences.preferredLanguage').optional().isIn(['en', 'ur', 'hi']),
+  body('preferences.notifications').optional().isBoolean(),
+];

@@ -117,6 +117,10 @@ export default function ProfilePage() {
       setSaving(true);
       try {
         await apiFetch(`/api/users/me`, { method: 'PUT', body: JSON.stringify(data) });
+        // Update localStorage with new profile data for navbar synchronization
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('userProfile', JSON.stringify({ firstName: data.firstName, lastName: data.lastName, email: data.email }));
+        }
       } catch (apiErr) {
         // Save a local draft in preview
         if (typeof window !== 'undefined') {
