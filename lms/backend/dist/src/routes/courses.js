@@ -84,7 +84,7 @@ router.get('/:id', async (req, res) => {
 // Create course (admin only)
 router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
     try {
-        const { title, description, price, thumbnail, category } = req.body || {};
+        const { title, description, price, thumbnail, bannerImage, pdfFiles, videoFiles, category, level, duration, language, tags } = req.body || {};
         if (!title || !description)
             return res.status(400).json({ message: 'title and description are required' });
         const instructor = req.user?.userId;
@@ -93,8 +93,15 @@ router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
             description,
             price: Number(price) || 0,
             thumbnail: thumbnail || '',
+            bannerImage: bannerImage || '',
+            pdfFiles: pdfFiles || [],
+            videoFiles: videoFiles || [],
             category: category || 'General',
-            isPublished: false,
+            level: level || 'beginner',
+            duration: Number(duration) || 0,
+            language: language || 'English',
+            tags: tags || [],
+            isPublished: true,
         });
         res.status(201).json({ id: course._id });
     }

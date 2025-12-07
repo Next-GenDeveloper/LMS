@@ -41,8 +41,18 @@ export default function AdminAnnouncementsPage() {
       });
 
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
         const data = await response.json();
         setAnnouncements(data.announcements || []);
+      } else {
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          console.error("Failed to fetch announcements:", error);
+        } else {
+          console.error("Failed to fetch announcements: Server returned non-JSON response");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch announcements:", error);

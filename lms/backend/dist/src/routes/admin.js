@@ -283,7 +283,7 @@ router.post('/courses', requireAuth, requireRole('admin'), async (req, res) => {
             language,
             tags: tags || [],
             modules: modules || [],
-            isPublished: false
+            isPublished: true
         });
         await course.save();
         res.status(201).json({ course });

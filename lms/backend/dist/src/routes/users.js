@@ -3,7 +3,7 @@ import { requireAuth, requireRole } from '../middleware/auth.ts';
 import { User } from '../models/User.ts';
 import { Enrollment } from '../models/Enrollment.ts';
 import { Course } from '../models/Course.ts';
-import { userProfileValidation, validate } from '../utils/Validators.ts';
+import { userProfileValidation, changePasswordValidation, validate } from '../utils/Validators.ts';
 const router = Router();
 // Get current user profile
 router.get('/me', requireAuth, async (req, res) => {
@@ -26,7 +26,6 @@ router.put('/me', requireAuth, validate(userProfileValidation), async (req, res)
     res.json(updated);
 });
 // Change password
-import { changePasswordValidation } from '../utils/Validators.ts';
 router.put('/me/password', requireAuth, validate(changePasswordValidation), async (req, res) => {
     const uid = req.user?.userId;
     const { currentPassword, newPassword } = req.body || {};

@@ -23,24 +23,35 @@ const upload = multer({
     fileSize: 100 * 1024 * 1024, // 100MB limit
   },
   fileFilter: (req, file, cb) => {
-    // Allow PDFs, videos, and documents
+    // Allow PDFs, videos, documents, and images
     const allowedTypes = [
       'application/pdf',
       'video/mp4',
       'video/avi',
       'video/mov',
       'video/wmv',
+      'video/quicktime',
+      'video/x-msvideo',
+      'video/x-ms-wmv',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/vnd.ms-powerpoint',
       'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'text/plain'
+      'text/plain',
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'image/bmp',
+      'image/tiff'
     ];
 
-    if (allowedTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDFs, videos, and documents are allowed.'));
+      cb(new Error(`Invalid file type: ${file.mimetype}. Only PDFs, videos, documents, and images are allowed.`));
     }
   }
 });

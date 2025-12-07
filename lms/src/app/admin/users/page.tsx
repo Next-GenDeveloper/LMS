@@ -39,9 +39,19 @@ export default function AdminUsersPage() {
       });
 
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
         const data = await response.json();
         setUsers(data.users || []);
         setTotalPages(data.pages || 1);
+      } else {
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          console.error("Failed to fetch users:", error);
+        } else {
+          console.error("Failed to fetch users: Server returned non-JSON response");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch users:", error);

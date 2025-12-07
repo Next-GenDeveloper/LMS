@@ -18,6 +18,9 @@ export interface ICourse extends Document {
   title: string;
   description: string;
   thumbnail: string;
+  bannerImage?: string;
+  pdfFiles?: string[];
+  videoFiles?: string[];
   category: string;
   price: number;
   rating: number;
@@ -54,6 +57,9 @@ const courseSchema = new Schema<ICourse>(
     title: { type: String, required: true },
     description: { type: String, required: true },
     thumbnail: { type: String },
+    bannerImage: { type: String },
+    pdfFiles: [{ type: String }],
+    videoFiles: [{ type: String }],
     category: { type: String, required: true },
     price: { type: Number, default: 0 },
     rating: { type: Number, default: 0 },

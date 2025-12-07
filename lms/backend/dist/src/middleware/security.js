@@ -2,7 +2,7 @@ import rateLimit from 'express-rate-limit';
 // Rate limiting for authentication endpoints
 export const authRateLimit = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // Limit each IP to 5 requests per windowMs
+    max: process.env.NODE_ENV === 'production' ? 5 : 50, // Limit each IP to 5 requests per windowMs in prod, 50 in dev
     message: {
         error: 'Too many authentication attempts, please try again later.'
     },

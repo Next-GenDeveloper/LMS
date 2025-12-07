@@ -44,9 +44,19 @@ export default function AdminEnrollmentsPage() {
       });
 
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
         const data = await response.json();
         setEnrollments(data.enrollments || []);
         setTotalPages(data.pages || 1);
+      } else {
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          console.error("Failed to fetch enrollments:", error);
+        } else {
+          console.error("Failed to fetch enrollments: Server returned non-JSON response");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch enrollments:", error);

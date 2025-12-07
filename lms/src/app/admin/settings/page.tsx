@@ -44,9 +44,11 @@ export default function AdminSettingsPage() {
         }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
+        const data = await response.json();
         setMessage("Password updated successfully!");
         setMessageType("success");
         setFormData({
@@ -55,7 +57,12 @@ export default function AdminSettingsPage() {
           confirmPassword: "",
         });
       } else {
-        setMessage(data.message || "Failed to update password");
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const data = await response.json();
+          setMessage(data.message || "Failed to update password");
+        } else {
+          setMessage("Failed to update password: Server error");
+        }
         setMessageType("error");
       }
     } catch (error) {

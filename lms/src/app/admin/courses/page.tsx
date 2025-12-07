@@ -8,7 +8,7 @@ interface Course {
   title: string;
   description: string;
   thumbnail: string;
-  instructor: {
+  instructor?: {
     firstName: string;
     lastName: string;
     email: string;
@@ -42,8 +42,19 @@ export default function AdminCoursesPage() {
       });
 
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
         const data = await response.json();
         setCourses(data.courses || []);
+      } else {
+        // Check content-type before trying to parse error as JSON
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const error = await response.json();
+          console.error("Failed to fetch courses:", error);
+        } else {
+          console.error("Failed to fetch courses: Server returned non-JSON response");
+        }
       }
     } catch (error) {
       console.error("Failed to fetch courses:", error);
@@ -178,10 +189,16 @@ export default function AdminCoursesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {course.instructor.firstName} {course.instructor.lastName}
-                      </div>
-                      <div className="text-sm text-gray-500">{course.instructor.email}</div>
+                      {course.instructor ? (
+                        <>
+                          <div className="text-sm text-gray-900">
+                            {course.instructor.firstName} {course.instructor.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500">{course.instructor.email}</div>
+                        </>
+                      ) : (
+                        <div className="text-sm text-gray-500">No instructor assigned</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">

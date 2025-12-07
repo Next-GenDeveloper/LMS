@@ -25,14 +25,21 @@ export default function AdminLoginPage() {
         body: JSON.stringify({ email, password, isAdmin: true }),
       });
 
-      const data = await response.json();
-
       if (response.ok) {
+        if (!response.headers.get('content-type')?.includes('application/json')) {
+          throw new Error('Expected JSON response');
+        }
+        const data = await response.json();
         localStorage.setItem("authToken", data.token);
         localStorage.setItem("userProfile", JSON.stringify(data.user));
         router.push("/admin/dashboard");
       } else {
-        setError(data.message || "Login failed");
+        if (response.headers.get('content-type')?.includes('application/json')) {
+          const data = await response.json();
+          setError(data.message || "Login failed");
+        } else {
+          setError("Login failed: Server error");
+        }
       }
     } catch (err) {
       setError("Network error. Please try again.");
