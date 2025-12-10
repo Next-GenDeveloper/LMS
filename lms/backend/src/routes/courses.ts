@@ -73,12 +73,99 @@ router.get('/:id', async (req: Request, res: Response) => {
       price: c.price,
       bannerImage: c.bannerImage,
       category: c.category,
+      level: c.level,
+      duration: c.duration,
+      language: c.language,
+      tags: c.tags,
+      rating: c.rating,
+      reviews: c.reviews,
+      enrollmentCount: c.enrollmentCount,
+      pdfFiles: c.pdfFiles || [],
+      videoFiles: c.videoFiles || [],
+      modules: c.modules.map(m => ({
+        title: m.title,
+        description: m.description,
+        lessons: m.lessons.map(l => ({
+          title: l.title,
+          description: l.description,
+          videoUrl: l.videoUrl,
+          duration: l.duration,
+          materials: l.materials || []
+        }))
+      })),
       isPublished: c.isPublished,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
     });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to get course' });
+  }
+});
+
+// Get course details with full information (for course page)
+router.get('/:id/details', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    const c = await Course.findById(id);
+    if (!c) return res.status(404).json({ message: 'Course not found' });
+
+    // Calculate total lessons and duration
+    let totalLessons = 0;
+    let totalDuration = 0;
+    c.modules.forEach(module => {
+      module.lessons.forEach(lesson => {
+        totalLessons++;
+        totalDuration += lesson.duration;
+      });
+    });
+
+    res.json({
+      id: c._id,
+      title: c.title,
+      description: c.description,
+      bannerImage: c.bannerImage,
+      price: c.price,
+      originalPrice: c.price * 2, // Simple way to show discount
+      rating: c.rating,
+      reviews: c.reviews,
+      students: c.enrollmentCount,
+      duration: `${c.duration} hours`,
+      lessons: totalLessons,
+      level: c.level,
+      language: c.language,
+      lastUpdated: c.updatedAt.toISOString().split('T')[0],
+      certificate: true,
+      whatYouLearn: [
+        `Master ${c.category} from scratch`,
+        `Build real-world ${c.category} projects`,
+        `Understand ${c.category} best practices`,
+        `Learn from industry experts`,
+        `Get hands-on experience with ${c.category}`
+      ],
+      requirements: [
+        `Basic knowledge of ${c.language || 'programming'}`,
+        `A computer with internet access`,
+        `Willingness to learn and practice`
+      ],
+      curriculum: c.modules.map(m => ({
+        title: m.title,
+        lessons: m.lessons.map(l => ({
+          title: l.title,
+          duration: `${l.duration} minutes`,
+          preview: false // In real implementation, this would be a field in the lesson
+        }))
+      })),
+      instructor: {
+        name: "Expert Instructor",
+        avatar: "EI",
+        bio: `Experienced ${c.category} instructor with years of industry experience`,
+        courses: 10,
+        students: 5000,
+        rating: 4.8
+      }
+    });
+  } catch (e: any) {
+    res.status(500).json({ message: e.message || 'Failed to get course details' });
   }
 });
 

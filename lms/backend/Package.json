@@ -5,12 +5,12 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
-    "dev": "ts-node --esm server.ts",
+    "start": "set NODE_OPTIONS=--trace-deprecation && node dist/server.js",
+    "dev": "set NODE_OPTIONS=--trace-deprecation && ts-node --esm server.ts",
     "build": "tsc",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
-    "seed": "ts-node --esm -e \"import('./src/utils/seedAdmin.ts').then(m => m.seedAdmin())\""
+    "seed": "set NODE_OPTIONS=--trace-deprecation && ts-node --esm -e \"import('./src/utils/seedAdmin.ts').then(m => m.seedAdmin())\""
   },
   "keywords": [
     "lms",
@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
+    "@types/cors": "^2.8.19",
     "@types/express": "^4.17.20",
     "@types/jest": "^29.5.5",
     "@types/jsonwebtoken": "^9.0.4",

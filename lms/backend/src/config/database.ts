@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { Sequelize } from 'sequelize';
-import { ENV } from './env';
+import { ENV } from './env.ts';
 
 // MongoDB Connection
 export const connectMongoDB = async () => {

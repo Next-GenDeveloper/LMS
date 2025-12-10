@@ -1,0 +1,11 @@
+import type { Request, Response, NextFunction } from 'express';
+type ValidationChain = any;
+export declare const validate: (validations: ValidationChain[]) => (req: Request, res: Response, next: NextFunction) => Promise<Response<any, Record<string, any>> | undefined>;
+export declare const strongPassword: any;
+export declare const signupValidation: any[];
+export declare const loginValidation: any[];
+export declare const changePasswordValidation: any[];
+export declare const courseValidation: any[];
+export declare const enrollmentValidation: any[];
+export declare const userProfileValidation: any[];
+export {};

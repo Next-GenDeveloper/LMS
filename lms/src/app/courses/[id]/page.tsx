@@ -1,180 +1,12 @@
-
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import StarRating from "@/components/StarRating";
 import LiveChat from "@/components/LiveChat";
 import StructuredExamination from "@/components/StructuredExamination";
 import CompetitiveChallenges from "@/components/CompetitiveChallenges";
-
-export default function CourseDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const { id } = params;
-  const [course, setCourse] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<number[]>([0]);
-  const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
-
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(`http://localhost:5000/api/courses/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Transform the data to match our expected structure
-          const transformedCourse = {
-            id: data.id,
-            title: data.title,
-            description: data.description,
-            price: data.price,
-            originalPrice: data.price * 2, // Simple way to show discount
-            bannerImage: data.bannerImage || "/next.svg",
-            rating: data.rating || 4.5,
-            reviews: data.reviews || 100,
-            students: data.enrollmentCount || 500,
-            duration: `${data.duration || 8} hours`,
-    ],
-    curriculum: [
-      {
-        title: "Getting Started with React",
-        lessons: [
-          { title: "Introduction to React", duration: "10:30", preview: true },
-          { title: "Setting Up Development Environment", duration: "15:00", preview: true },
-          { title: "Your First React Component", duration: "20:00", preview: false },
-          { title: "Understanding JSX", duration: "18:00", preview: false },
-        ],
-      },
-      {
-        title: "React Fundamentals",
-        lessons: [
-          { title: "Props and State", duration: "25:00", preview: false },
-          { title: "Event Handling", duration: "20:00", preview: false },
-          { title: "Conditional Rendering", duration: "15:00", preview: false },
-          { title: "Lists and Keys", duration: "18:00", preview: false },
-        ],
-      },
-      {
-        title: "Hooks Deep Dive",
-        lessons: [
-          { title: "useState Hook", duration: "22:00", preview: false },
-          { title: "useEffect Hook", duration: "28:00", preview: false },
-          { title: "useContext Hook", duration: "20:00", preview: false },
-          { title: "Custom Hooks", duration: "25:00", preview: false },
-        ],
-      },
-      {
-        title: "Advanced Patterns",
-        lessons: [
-          { title: "Higher Order Components", duration: "20:00", preview: false },
-          { title: "Render Props", duration: "18:00", preview: false },
-          { title: "Performance Optimization", duration: "30:00", preview: false },
-        ],
-      },
-    ],
-    reviews: [
-      {
-        name: "Sarah M.",
-        avatar: "S",
-        rating: 5,
-        date: "2 weeks ago",
-        text: "This course is amazing! Alex explains everything so clearly. I went from knowing nothing about React to building my own apps.",
-      },
-      {
-        name: "John D.",
-        avatar: "J",
-        rating: 5,
-        date: "1 month ago",
-        text: "Best React course I've taken. The projects are practical and the instructor is very responsive to questions.",
-      },
-      {
-        name: "Emily R.",
-        avatar: "E",
-        rating: 4,
-        date: "1 month ago",
-        text: "Great content and well-structured. Would love more advanced topics in future updates.",
-      },
-    ],
-  },
-};
-
-// Default course for unknown IDs
-const defaultCourse: Course = {
-  id: "default",
-  title: "Complete Web Development Bootcamp",
-  description:
-    "Learn full-stack web development from scratch. Master HTML, CSS, JavaScript, React, Node.js, and more with hands-on projects.",
-  instructor: {
-    name: "Sarah Williams",
-    avatar: "SW",
-    bio: "Full-stack developer and educator with 8+ years of experience building web applications.",
-    courses: 8,
-    students: 32000,
-    rating: 4.8,
-  },
-  rating: 4.8,
-  reviews: 890,
-  students: 12500,
-  price: 59,
-  originalPrice: 119,
-  thumbnail: "bg-gradient-to-br from-green-400 to-teal-600",
-  duration: "16 weeks",
-  lessons: 120,
-  level: "Beginner",
-  language: "English",
-  lastUpdated: "October 2024",
-  certificate: true,
-  whatYouLearn: [
-    "Build responsive websites with HTML & CSS",
-    "Master JavaScript fundamentals and ES6+",
-    "Create React applications",
-    "Build REST APIs with Node.js",
-    "Work with databases (MongoDB, PostgreSQL)",
-    "Deploy applications to the cloud",
-  ],
-  requirements: [
-    "No programming experience required",
-    "A computer with internet access",
-    "Willingness to learn",
-  ],
-  curriculum: [
-    {
-      title: "Web Fundamentals",
-      lessons: [
-        { title: "Introduction to Web Development", duration: "12:00", preview: true },
-        { title: "HTML Basics", duration: "25:00", preview: true },
-        { title: "CSS Styling", duration: "30:00", preview: false },
-      ],
-    },
-    {
-      title: "JavaScript Essentials",
-      lessons: [
-        { title: "JavaScript Basics", duration: "28:00", preview: false },
-        { title: "DOM Manipulation", duration: "22:00", preview: false },
-        { title: "Async JavaScript", duration: "35:00", preview: false },
-      ],
-    },
-  ],
-  reviews: [
-    {
-      name: "Mike T.",
-      avatar: "M",
-      rating: 5,
-      date: "1 week ago",
-      text: "Excellent course for beginners. Very comprehensive and well-paced.",
-    },
-  ],
-};
+import { API_BASE } from "@/lib/api";
+import Image from "next/image";
 
 type Lesson = {
   title: string;
@@ -199,6 +31,7 @@ type Course = {
   id: string;
   title: string;
   description: string;
+  bannerImage?: string;
   instructor: {
     name: string;
     avatar: string;
@@ -212,7 +45,6 @@ type Course = {
   students: number;
   price: number;
   originalPrice: number;
-  thumbnail: string;
   duration: string;
   lessons: number;
   level: string;
@@ -230,9 +62,32 @@ export default function CourseDetailPage({
   params: { id: string };
 }) {
   const { id } = params;
-  const course = courseData[id] || defaultCourse;
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<number[]>([0]);
   const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
+
+  useEffect(() => {
+    const fetchCourseDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_BASE}/api/courses/${id}/details`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch course details: ${response.status}`);
+        }
+        const data = await response.json();
+        setCourse(data);
+      } catch (err) {
+        console.error("Error fetching course details:", err);
+        setError("Failed to load course details. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourseDetails();
+  }, [id]);
 
   const toggleSection = (index: number) => {
     setExpandedSections((prev) =>
@@ -240,11 +95,12 @@ export default function CourseDetailPage({
     );
   };
 
-  const totalLessons = course.curriculum.reduce(
+  const totalLessons = course?.curriculum?.reduce(
     (acc, section) => acc + section.lessons.length,
     0
-  );
-  const totalDuration = course.curriculum.reduce((acc, section) => {
+  ) || 0;
+
+  const totalDuration = course?.curriculum?.reduce((acc, section) => {
     return (
       acc +
       section.lessons.reduce((lessonAcc, lesson) => {
@@ -252,7 +108,7 @@ export default function CourseDetailPage({
         return lessonAcc + mins;
       }, 0)
     );
-  }, 0);
+  }, 0) || 0;
 
   const handleEnroll = async () => {
     const token = localStorage.getItem("authToken");
@@ -260,14 +116,123 @@ export default function CourseDetailPage({
       window.location.href = `/auth/login?next=${encodeURIComponent(`/courses/${id}`)}`;
       return;
     }
-    alert("Enrollment successful! You can now access the course.");
+
+    try {
+      // First check if user is already enrolled
+      const checkResponse = await fetch(`${API_BASE}/api/enrollments/check/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (checkResponse.ok) {
+        const checkData = await checkResponse.json();
+        if (checkData.isEnrolled) {
+          alert("You are already enrolled in this course! You can access it from your dashboard.");
+          return;
+        }
+      }
+
+      // Process enrollment with payment
+      const response = await fetch(`${API_BASE}/api/enrollments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ courseId: id, paymentMethod: 'credit_card' }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Enrollment failed");
+      }
+
+      const result = await response.json();
+      alert(result.message || "Enrollment successful! You can now access the course.");
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      alert(`Enrollment failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+        <p className="ml-4 text-gray-700">Loading course details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-gray-700 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">Course Not Found</h2>
+          <p className="text-gray-600 mb-4">The course you're looking for doesn't exist.</p>
+          <Link
+            href="/courses"
+            className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          >
+            Browse Courses
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper function to get banner image URL
+  const getBannerImageUrl = (url?: string): string => {
+    if (!url) return "bg-gradient-to-br from-purple-600 to-blue-600";
+    if (url.startsWith('http')) return url;
+    return `${API_BASE}${url}`;
+  };
+
+  // Helper function to get banner image style
+  const getBannerStyle = (url?: string): string => {
+    if (!url) return "bg-gradient-to-br from-purple-600 to-blue-600";
+    return "relative";
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className={`relative ${course.thumbnail} py-8 sm:py-12 md:py-16`}>
-        <div className="absolute inset-0 bg-black/50" />
+      {/* Hero Section with Banner Image */}
+      <section className={`relative py-8 sm:py-12 md:py-16`}>
+        {course.bannerImage ? (
+          <div className={getBannerStyle(course.bannerImage)}>
+            <Image
+              src={getBannerImageUrl(course.bannerImage)}
+              alt={course.title}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/50" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600" />
+        )}
+
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="max-w-4xl">
             {/* Breadcrumb */}
@@ -304,7 +269,6 @@ export default function CourseDetailPage({
               <span className="hidden sm:inline">•</span>
               <span>{course.duration}</span>
             </div>
-
           </div>
         </div>
       </section>
@@ -363,7 +327,6 @@ export default function CourseDetailPage({
                     ))}
                   </ul>
                 </div>
-
               </div>
             )}
 
@@ -495,8 +458,18 @@ export default function CourseDetailPage({
           {/* Sidebar - Purchase Card */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-lg border sticky top-20 overflow-hidden">
-              {/* Preview Image */}
-              <div className={`h-40 sm:h-48 ${course.thumbnail} relative`}>
+              {/* Preview Image - using banner image consistently */}
+              <div className={`h-40 sm:h-48 relative`}>
+                {course.bannerImage ? (
+                  <Image
+                    src={getBannerImageUrl(course.bannerImage)}
+                    alt={course.title}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600" />
+                )}
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                   <button className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition">
                     <svg
@@ -590,16 +563,15 @@ export default function CourseDetailPage({
           </div>
         </div>
       </div>
+
+      {/* Competitive Challenges */}
+      <CompetitiveChallenges courseId={id} />
+
+      {/* Structured Examinations */}
+      <StructuredExamination courseId={id} />
+
+      {/* Live Chat Component */}
+      <LiveChat courseId={id} />
     </div>
-
-    {/* Competitive Challenges */}
-    <CompetitiveChallenges courseId={id} />
-
-    {/* Structured Examinations */}
-    <StructuredExamination courseId={id} />
-
-    {/* Live Chat Component */}
-    <LiveChat courseId={id} />
-  </div>
-);
+  );
 }

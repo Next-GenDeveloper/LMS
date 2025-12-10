@@ -2,7 +2,8 @@ import type { Request, Response } from 'express';
 import { User } from '../models/User.ts';
 import { hashPassword, comparePassword } from '../utils/Passwordhash.ts';
 import { generateToken } from '../utils/jwt.ts';
-import { validationResult } from 'express-validator';
+import * as expressValidator from 'express-validator';
+const { validationResult } = expressValidator as any;
 
 export const registerUser = async (req: Request, res: Response) => {
   try {

@@ -1,10 +1,7 @@
-import type { ValidationChain } from 'express-validator';
-import ev from 'express-validator';
-const { body, validationResult } = ev as unknown as {
-  body: typeof import('express-validator').body;
-  validationResult: typeof import('express-validator').validationResult;
-};
+import * as expressValidator from 'express-validator';
+const { body, validationResult } = expressValidator as any;
 import type { Request, Response, NextFunction } from 'express';
+type ValidationChain = any;
 
 export const validate = (validations: ValidationChain[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {

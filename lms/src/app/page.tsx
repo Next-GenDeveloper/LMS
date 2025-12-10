@@ -52,7 +52,27 @@ export default function Home() {
 
         if (!response.ok) {
           const errorText = await response.text().catch(() => 'Unknown error');
-          throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
+          const message = `Announcements unavailable (status ${response.status}). ${errorText || 'Please try again later.'}`;
+
+          // Show friendly error and set fallback data instead of throwing
+          setFetchError(message);
+
+          if (process.env.NODE_ENV === 'development') {
+            setAnnouncements([
+              {
+                _id: 'fallback-1',
+                title: 'Announcements temporarily unavailable',
+                message: message,
+                type: 'warning',
+                createdAt: new Date().toISOString(),
+                createdBy: { firstName: 'System', lastName: 'Notice' }
+              }
+            ]);
+          } else {
+            setAnnouncements([]);
+          }
+
+          return;
         }
 
         const data = await response.json();
