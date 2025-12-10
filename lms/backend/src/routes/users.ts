@@ -14,7 +14,6 @@ router.get('/me', requireAuth, async (req: Request, res: Response): Promise<void
   const u = await User.findById(uid).select('_id email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
   if (!u) {
     res.status(404).json({ message: 'User not found' });
-      return;
     return;
   }
   res.json(u);
@@ -33,7 +32,6 @@ router.put('/me', requireAuth, validate(userProfileValidation), async (req: Requ
   ).select('email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
   if (!updated) {
     res.status(404).json({ message: 'User not found' });
-      return;
     return;
   }
   res.json(updated);

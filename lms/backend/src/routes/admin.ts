@@ -166,7 +166,7 @@ router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
       });
       if (existingUser) {
         res.status(400).json({ message: 'Email already in use by another user' });
-      return;
+        return;
       }
       updateData.email = email.toLowerCase().trim();
     }
