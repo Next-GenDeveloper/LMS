@@ -85,7 +85,7 @@ router.get('/users', requireAuth, requireRole('admin'), async (req: Request, res
 });
 
 // Create new user (admin only)
-router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { firstName, lastName, email, password, role = 'student', phone, bio } = req.body;
 

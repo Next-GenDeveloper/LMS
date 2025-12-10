@@ -12,7 +12,8 @@ router.post('/courses/:courseId/messages', requireAuth, async (req, res): Promis
     const userId = (req as any).user?.userId;
 
     if (!content) {
-      return res.status(400).json({ error: 'Message content is required' });
+      res.status(400).json({ error: 'Message content is required' });
+      return;
     }
 
     const message = new ChatMessage({

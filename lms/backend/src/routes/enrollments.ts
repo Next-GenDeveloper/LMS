@@ -37,7 +37,8 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
     // Check if course exists
     const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      res.status(404).json({ message: 'Course not found' });
+      return;
     }
 
     // Check if user is already enrolled
@@ -48,7 +49,8 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
 
     if (existingEnrollment) {
       if (existingEnrollment.paymentStatus === 'completed') {
-        return res.status(400).json({ message: 'Already enrolled in this course' });
+        res.status(400).json({ message: 'Already enrolled in this course' });
+        return;
       } else {
         // Update existing enrollment
         existingEnrollment.paymentStatus = 'completed';
@@ -60,11 +62,12 @@ router.post('/', requireAuth, async (req: Request, res: Response): Promise<void>
         course.enrollmentCount += 1;
         await course.save();
 
-        return res.json({
+        res.json({
           success: true,
           enrollmentId: existingEnrollment._id,
           message: 'Enrollment updated successfully'
         });
+        return;
       }
     }
 
@@ -137,7 +140,8 @@ router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<voi
     }).populate('course', 'title description bannerImage price category');
 
     if (!enrollment) {
-      return res.status(404).json({ message: 'Enrollment not found' });
+      res.status(404).json({ message: 'Enrollment not found' });
+      return;
     }
 
     res.json({
@@ -177,7 +181,8 @@ router.put('/:id/progress', requireAuth, async (req: Request, res: Response): Pr
     );
 
     if (!enrollment) {
-      return res.status(404).json({ message: 'Enrollment not found' });
+      res.status(404).json({ message: 'Enrollment not found' });
+      return;
     }
 
     res.json({

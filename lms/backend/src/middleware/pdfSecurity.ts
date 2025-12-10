@@ -11,29 +11,32 @@ export async function pdfSecurity(req: Request, res: Response, next: NextFunctio
     const token = req.query.token as string || req.headers.authorization?.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Unauthorized',
         message: 'Authentication token required to access this resource'
       });
+      return;
     }
 
     // Verify JWT token
     const decoded = await verifyToken(token);
     if (!decoded || !decoded.userId) {
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid authentication token'
       });
+      return;
     }
 
     const userId = decoded.userId;
     const courseId = req.query.courseId as string;
 
     if (!courseId) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'Course ID is required'
       });
+      return;
     }
 
     // Check if user is enrolled in the course with completed payment
@@ -44,18 +47,20 @@ export async function pdfSecurity(req: Request, res: Response, next: NextFunctio
     });
 
     if (!enrollment) {
-      return res.status(403).json({
+      res.status(403).json({
         error: 'Forbidden',
         message: 'You must enroll in this course and complete payment to access this content'
       });
+      return;
     }
 
     // Check if enrollment is active
     if (enrollment.status !== 'active') {
-      return res.status(403).json({
+      res.status(403).json({
         error: 'Forbidden',
         message: 'Your enrollment is not active. Please contact support.'
       });
+      return;
     }
 
     // If all checks pass, allow access to the PDF
@@ -79,27 +84,30 @@ export async function adminPdfAccess(req: Request, res: Response, next: NextFunc
     const token = authHeader?.split(' ')[1];
 
     if (!token) {
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Unauthorized',
         message: 'Authentication token required'
       });
+      return;
     }
 
     // Verify JWT token
     const decoded = await verifyToken(token);
     if (!decoded || !decoded.userId || !decoded.role) {
-      return res.status(401).json({
+      res.status(401).json({
         error: 'Unauthorized',
         message: 'Invalid authentication token'
       });
+      return;
     }
 
     // Check if user has admin role
     if (decoded.role !== 'admin') {
-      return res.status(403).json({
+      res.status(403).json({
         error: 'Forbidden',
         message: 'Admin access required for this operation'
       });
+      return;
     }
 
     // If all checks pass, allow access

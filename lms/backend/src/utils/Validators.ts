@@ -1,5 +1,5 @@
 import * as expressValidator from 'express-validator';
-const { body, validationResult } = expressValidator as any;
+const { body } = expressValidator as any;
 import type { Request, Response, NextFunction } from 'express';
 type ValidationChain = any;
 

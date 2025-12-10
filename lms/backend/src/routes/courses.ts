@@ -22,7 +22,7 @@ router.get('/', async (_req: Request, res: Response): Promise<void> => {
   } catch (e: any) {
     // Return a mock dataset so the UI remains usable, regardless of env
     console.warn('Course list failed, returning mock data:', e?.message || e);
-    return res.json([
+    res.json([
       {
         id: 'demo-1',
         title: 'Intro to React',

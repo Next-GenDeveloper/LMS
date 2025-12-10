@@ -8,10 +8,10 @@ const router = Router();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     cb(null, 'uploads/');
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   }
@@ -22,7 +22,7 @@ const upload = multer({
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Allow PDFs, videos, documents, and images
     const allowedTypes = [
       'application/pdf',
@@ -57,7 +57,7 @@ const upload = multer({
 });
 
 // Upload single file
-router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (req: Request, res: Response) => {
+router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (req: Request, res: Response): void => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No file uploaded' });
@@ -77,7 +77,7 @@ router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (
 });
 
 // Upload multiple files
-router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 10), (req: Request, res: Response) => {
+router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 10), (req: Request, res: Response): void => {
   try {
     if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
       return res.status(400).json({ message: 'No files uploaded' });

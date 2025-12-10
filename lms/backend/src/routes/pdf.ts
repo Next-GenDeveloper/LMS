@@ -6,7 +6,7 @@ import { pdfSecurity, adminPdfAccess } from '../middleware/pdfSecurity.ts';
 const router = Router();
 
 // Serve PDF files with security middleware
-router.get('/secure/:filename', pdfSecurity, (req, res) => {
+router.get('/secure/:filename', pdfSecurity, (req, res): void => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(__dirname, '../../uploads', filename);
@@ -53,7 +53,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res) => {
 });
 
 // Admin endpoint to manage PDF access permissions
-router.post('/:courseId/permissions', adminPdfAccess, async (req, res) => {
+router.post('/:courseId/permissions', adminPdfAccess, async (req, res): Promise<void> => {
   try {
     const courseId = req.params.courseId;
     const { userId, action } = req.body; // action: 'grant' or 'revoke'
