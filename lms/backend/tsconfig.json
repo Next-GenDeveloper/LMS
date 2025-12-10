@@ -18,6 +18,8 @@
     "noFallthroughCasesInSwitch": true,
     "inlineSourceMap": true,
     "inlineSources": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
   },
   "include": [
     "src/**/*.ts",

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { Enrollment } from '../models/Enrollment.ts';
-import { jwtVerify } from '../utils/jwt.ts';
+import { verifyToken } from '../utils/jwt.ts';
 
 /**
  * Middleware to secure PDF files and ensure only enrolled users with completed payments can access them
@@ -18,7 +18,7 @@ export async function pdfSecurity(req: Request, res: Response, next: NextFunctio
     }
 
     // Verify JWT token
-    const decoded = await jwtVerify(token);
+    const decoded = await verifyToken(token);
     if (!decoded || !decoded.userId) {
       return res.status(401).json({
         error: 'Unauthorized',
@@ -86,7 +86,7 @@ export async function adminPdfAccess(req: Request, res: Response, next: NextFunc
     }
 
     // Verify JWT token
-    const decoded = await jwtVerify(token);
+    const decoded = await verifyToken(token);
     if (!decoded || !decoded.userId || !decoded.role) {
       return res.status(401).json({
         error: 'Unauthorized',

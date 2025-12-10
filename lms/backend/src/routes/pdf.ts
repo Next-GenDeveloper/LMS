@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import path from 'path';
 import fs from 'fs';
-import { pdfSecurity, adminPdfAccess } from '../middleware/pdfSecurity';
+import { pdfSecurity, adminPdfAccess } from '../middleware/pdfSecurity.ts';
 
 const router = Router();
 
