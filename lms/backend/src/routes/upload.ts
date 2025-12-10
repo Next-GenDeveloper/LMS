@@ -60,7 +60,8 @@ const upload = multer({
 router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (req: Request, res: Response): void => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      res.status(400).json({ message: 'No file uploaded' });
+      return;
     }
 
     const fileUrl = `/uploads/${req.file.filename}`;
@@ -73,6 +74,7 @@ router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (
     });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Upload failed' });
+      return;
   }
 });
 
@@ -80,7 +82,8 @@ router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (
 router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 10), (req: Request, res: Response): void => {
   try {
     if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-      return res.status(400).json({ message: 'No files uploaded' });
+      res.status(400).json({ message: 'No files uploaded' });
+      return;
     }
 
     const files = (req.files as Express.Multer.File[]).map(file => ({
@@ -94,6 +97,7 @@ router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 1
     res.json({ files });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Upload failed' });
+      return;
   }
 });
 

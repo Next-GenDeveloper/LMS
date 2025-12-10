@@ -13,7 +13,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res): void => {
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
+      res.status(404).json({
         error: 'Not Found',
         message: 'PDF file not found'
       });
@@ -21,7 +21,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res): void => {
 
     // Check if the file is actually a PDF
     if (!filename.toLowerCase().endsWith('.pdf')) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'Only PDF files can be accessed through this endpoint'
       });
@@ -62,7 +62,7 @@ router.post('/:courseId/permissions', adminPdfAccess, async (req, res): Promise<
     // For this example, we'll just return success
 
     if (!['grant', 'revoke'].includes(action)) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: "Action must be either 'grant' or 'revoke'"
       });
