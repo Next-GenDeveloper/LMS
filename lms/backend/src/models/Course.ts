@@ -17,7 +17,6 @@ export interface ILesson {
 export interface ICourse extends Document {
   title: string;
   description: string;
-  thumbnail: string;
   bannerImage?: string;
   pdfFiles?: string[];
   videoFiles?: string[];
@@ -57,7 +56,6 @@ const courseSchema = new Schema<ICourse>(
   {
     title: { type: String, required: true },
     description: { type: String, required: true },
-    thumbnail: { type: String },
     bannerImage: { type: String },
     pdfFiles: [{ type: String }],
     videoFiles: [{ type: String }],

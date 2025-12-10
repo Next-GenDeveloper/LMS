@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { isLoggedIn, getUserFromToken } from "@/lib/auth";
+import ProductUploadModal from "@/components/ProductUploadModal";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -27,6 +28,9 @@ export default function AdminDashboardPage() {
   const [isCompetitionSubmitting, setIsCompetitionSubmitting] = useState(false);
   const [newsletterMessage, setNewsletterMessage] = useState<string | null>(null);
   const [isNewsletterSubmitting, setIsNewsletterSubmitting] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadSuccessMessage, setUploadSuccessMessage] = useState('');
 
   const handleCompetitionSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,6 +70,21 @@ export default function AdminDashboardPage() {
       setNewsletterMessage("Subscribed successfully! Check your inbox for confirmation.");
       e.currentTarget.reset();
     }, 600);
+  };
+
+  const handleProductAdded = (newProduct: any) => {
+    // Get existing products from localStorage
+    const existing = localStorage.getItem('uploadedProducts');
+    const uploadedProducts = existing ? JSON.parse(existing) : [];
+    
+    // Add new product
+    const updated = [newProduct, ...uploadedProducts];
+    localStorage.setItem('uploadedProducts', JSON.stringify(updated));
+
+    // Show success message
+    setUploadSuccessMessage(`✓ "${newProduct.name}" has been added to the shop!`);
+    setUploadSuccess(true);
+    setTimeout(() => setUploadSuccess(false), 3000);
   };
 
   return (
@@ -505,7 +524,84 @@ export default function AdminDashboardPage() {
             ))}
           </div>
         </section>
+
+        {/* Announcements Section */}
+        <section className="py-10">
+          <h2 className="text-lg md:text-xl font-bold mb-5">📢 Announcements</h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {[
+              {
+                title: "New Course Launch",
+                desc: "Advanced AI & Machine Learning course is now live! Enroll today and get 20% discount."
+              },
+              {
+                title: "Workshop Event",
+                desc: "Join our free webinar on 'Digital Marketing Trends 2025' next week. Register now!"
+              },
+              {
+                title: "System Maintenance",
+                desc: "Scheduled maintenance on Dec 15. Platform will be unavailable from 2-4 AM UTC."
+              },
+              {
+                title: "Achievement Milestone",
+                desc: "Congratulations! We've reached 10,000+ active learners. Thank you for your support!"
+              }
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="bg-white rounded-3xl p-4 shadow-sm border border-orange-100"
+              >
+                <div className="font-semibold text-sm mb-2">{item.title}</div>
+                <p className="text-xs text-gray-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Product Upload Section */}
+        <section className="py-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg md:text-xl font-bold">📤 Product Management</h2>
+              <p className="text-xs text-gray-500 mt-1">Upload and manage products for your store</p>
+            </div>
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="px-6 py-3 bg-orange-500 text-white rounded-full font-semibold hover:bg-orange-600 transition shadow-md text-sm"
+            >
+              + Add New Product
+            </button>
+          </div>
+
+          {uploadSuccess && (
+            <div className="mb-6 bg-green-50 border border-green-200 rounded-3xl p-4 flex items-center gap-3">
+              <span className="text-2xl">✓</span>
+              <div>
+                <div className="font-semibold text-green-800 text-sm">{uploadSuccessMessage}</div>
+                <div className="text-xs text-green-700">Product has been added to your shop inventory.</div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-orange-100">
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">📦</div>
+              <h3 className="font-semibold text-sm mb-2">Start Uploading Products</h3>
+              <p className="text-xs text-gray-600 mb-4">Click the button above to add your first product with images, pricing, and inventory details.</p>
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="text-xs font-semibold text-orange-500 hover:text-orange-600 transition"
+              >
+                Learn more about product upload →
+              </button>
+            </div>
+          </div>
+        </section>
       </main>
-    </div>
-  );
-}
+
+      {/* Product Upload Modal */}
+      <ProductUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onProductAdded={handleProductAdded}
+      />

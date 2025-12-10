@@ -10,7 +10,6 @@ export default function CreateCoursePage() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    thumbnail: "",
     category: "",
     price: "",
     level: "beginner",
@@ -166,19 +165,6 @@ export default function CreateCoursePage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Thumbnail URL
-              </label>
-              <input
-                type="url"
-                name="thumbnail"
-                value={formData.thumbnail}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

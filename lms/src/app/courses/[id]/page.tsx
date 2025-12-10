@@ -1,49 +1,49 @@
+
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import StarRating from "@/components/StarRating";
 import LiveChat from "@/components/LiveChat";
 import StructuredExamination from "@/components/StructuredExamination";
 import CompetitiveChallenges from "@/components/CompetitiveChallenges";
 
-// Demo course data - replace with API fetch
-const courseData: Record<string, Course> = {
-  c1: {
-    id: "c1",
-    title: "Complete React Development",
-    description:
-      "Master React from scratch and build modern, interactive web applications. Learn hooks, context, routing, and state management with hands-on projects.",
-    instructor: {
-      name: "Alex Johnson",
-      avatar: "AJ",
-      bio: "Senior Software Engineer with 10+ years of experience. Former Google engineer, now teaching 50,000+ students worldwide.",
-      courses: 12,
-      students: 45000,
-      rating: 4.9,
-    },
-    rating: 4.9,
-    students: 15234,
-    price: 49,
-    originalPrice: 99,
-    thumbnail: "bg-gradient-to-br from-blue-500 to-purple-600",
-    duration: "12 weeks",
-    lessons: 85,
-    level: "Beginner to Advanced",
-    language: "English",
-    lastUpdated: "November 2024",
-    certificate: true,
-    whatYouLearn: [
-      "Build scalable React applications from scratch",
-      "Master React Hooks and Context API",
-      "Implement routing with React Router",
-      "State management with Redux Toolkit",
-      "Testing and debugging techniques",
-      "Deploy React apps to production",
-    ],
-    requirements: [
-      "Basic HTML, CSS, and JavaScript knowledge",
-      "A computer with internet access",
-      "No prior React experience needed",
+export default function CourseDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { id } = params;
+  const [course, setCourse] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<number[]>([0]);
+  const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
+
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await fetch(`http://localhost:5000/api/courses/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Transform the data to match our expected structure
+          const transformedCourse = {
+            id: data.id,
+            title: data.title,
+            description: data.description,
+            price: data.price,
+            originalPrice: data.price * 2, // Simple way to show discount
+            bannerImage: data.bannerImage || "/next.svg",
+            rating: data.rating || 4.5,
+            reviews: data.reviews || 100,
+            students: data.enrollmentCount || 500,
+            duration: `${data.duration || 8} hours`,
     ],
     curriculum: [
       {

@@ -9,11 +9,17 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  discountPrice?: number;
   image: string;
+  images?: string[];
   category: string;
   stock: number;
   rating: number;
   reviews: number;
+  shortDescription?: string;
+  longDescription?: string;
+  specifications?: { key: string; value: string }[];
+  features?: string[];
 }
 
 const DEMO_PRODUCTS: Product[] = [
@@ -118,6 +124,20 @@ export default function ShopPage() {
 
   const categories = ['All', ...new Set(products.map(p => p.category))];
 
+  // Load uploaded products from localStorage on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('uploadedProducts');
+    if (stored) {
+      try {
+        const uploadedProducts = JSON.parse(stored);
+        setProducts(prev => [...uploadedProducts, ...DEMO_PRODUCTS]);
+        setFilteredProducts(prev => [...uploadedProducts, ...DEMO_PRODUCTS]);
+      } catch (e) {
+        console.error('Failed to load uploaded products');
+      }
+    }
+  }, []);
+
   useEffect(() => {
     let filtered = [...products];
 
@@ -170,8 +190,10 @@ export default function ShopPage() {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 text-white py-12 md:py-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">9Tangle Store</h1>
-          <p className="text-xl text-white/90">Discover premium products at incredible prices</p>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">9Tangle Store</h1>
+            <p className="text-xl text-white/90">Discover premium products at incredible prices</p>
+          </div>
         </div>
       </div>
 
@@ -320,83 +342,145 @@ export default function ShopPage() {
 
       {/* Product Detail Modal */}
       {selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedProduct(null)}>
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto" onClick={() => setSelectedProduct(null)}>
+          <div className="bg-white rounded-2xl max-w-3xl w-full my-8" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 flex justify-between items-center z-10">
               <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
-              <button onClick={() => setSelectedProduct(null)} className="text-2xl text-gray-500 hover:text-gray-700">✕</button>
+              <button onClick={() => setSelectedProduct(null)} className="text-2xl text-white/80 hover:text-white">✕</button>
             </div>
 
-            <div className="p-6">
-              {/* Image */}
-              <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-8xl mb-6">
-                {selectedProduct.image}
-              </div>
-
-              {/* Details */}
-              <div className="space-y-4 mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-600 text-sm font-semibold">Price</p>
-                    <p className="text-3xl font-bold text-orange-500">${selectedProduct.price.toFixed(2)}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-600 text-sm font-semibold">Category</p>
-                    <p className="text-xl font-semibold text-slate-900">{selectedProduct.category}</p>
-                  </div>
-                </div>
-
+            <div className="p-8 space-y-6 max-h-[calc(90vh-100px)] overflow-y-auto">
+              {/* Images Gallery */}
+              {selectedProduct.images && selectedProduct.images.length > 0 ? (
                 <div>
-                  <p className="text-gray-600 text-sm font-semibold">Description</p>
-                  <p className="text-slate-700 text-lg mt-2">{selectedProduct.description}</p>
+                  <h3 className="font-bold text-lg mb-4 text-slate-900">Product Images</h3>
+                  <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                    {selectedProduct.images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center text-5xl border-2 border-gray-200 hover:border-blue-500 transition"
+                      >
+                        {img}
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              ) : (
+                <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-8xl">
+                  {selectedProduct.image}
+                </div>
+              )}
 
-                {/* Specifications */}
-                <div className="border-t pt-4">
-                  <p className="text-gray-600 text-sm font-semibold mb-3">Specifications</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-50 p-3 rounded">
-                      <p className="text-xs text-gray-600">Rating</p>
-                      <p className="font-bold text-lg flex items-center gap-1">{'⭐'.repeat(Math.floor(selectedProduct.rating))} {selectedProduct.rating}</p>
+              {/* Basic Info */}
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-slate-900">Product Information</h3>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-gray-600 text-sm font-semibold">Category</p>
+                      <p className="text-lg font-semibold text-slate-900">{selectedProduct.category}</p>
                     </div>
-                    <div className="bg-slate-50 p-3 rounded">
-                      <p className="text-xs text-gray-600">Reviews</p>
-                      <p className="font-bold text-lg">{selectedProduct.reviews} reviews</p>
-                    </div>
-                    <div className="bg-slate-50 p-3 rounded">
-                      <p className="text-xs text-gray-600">Stock Status</p>
-                      <p className={`font-bold text-lg ${selectedProduct.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <div>
+                      <p className="text-gray-600 text-sm font-semibold">Stock Status</p>
+                      <p className={`text-lg font-semibold ${selectedProduct.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {selectedProduct.stock > 0 ? `${selectedProduct.stock} Available` : 'Out of Stock'}
                       </p>
                     </div>
-                    <div className="bg-slate-50 p-3 rounded">
-                      <p className="text-xs text-gray-600">Product ID</p>
-                      <p className="font-bold text-lg">#{selectedProduct.id}</p>
-                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Features */}
-                <div className="border-t pt-4">
-                  <p className="text-gray-600 text-sm font-semibold mb-3">Key Features</p>
+              {/* Pricing */}
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-slate-900">Pricing</h3>
+                <div className="space-y-2">
+                  {selectedProduct.discountPrice && selectedProduct.discountPrice > 0 ? (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-600 text-sm">Regular Price:</p>
+                        <p className="text-2xl font-bold line-through text-gray-500">${selectedProduct.discountPrice.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <p className="text-gray-600 text-sm font-semibold">Sale Price:</p>
+                        <p className="text-3xl font-bold text-green-600">${selectedProduct.price.toFixed(2)}</p>
+                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                          {Math.round(((selectedProduct.discountPrice - selectedProduct.price) / selectedProduct.discountPrice) * 100)}% OFF
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <p className="text-gray-600 text-sm font-semibold mb-2">Price</p>
+                      <p className="text-3xl font-bold text-orange-500">${selectedProduct.price.toFixed(2)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-slate-900">Description</h3>
+                <div className="space-y-3">
+                  <p className="text-slate-700">{selectedProduct.shortDescription}</p>
+                  {selectedProduct.longDescription && (
+                    <p className="text-slate-600">{selectedProduct.longDescription}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Features */}
+              {selectedProduct.features && selectedProduct.features.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-lg mb-4 text-slate-900">Key Features</h3>
                   <ul className="space-y-2">
-                    <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span>Premium Quality Product</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span>Fast Shipping Available</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span>30-Day Money Back Guarantee</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="text-green-500">✓</span>
-                      <span>24/7 Customer Support</span>
-                    </li>
+                    {selectedProduct.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <span className="text-orange-500 font-bold text-lg">✓</span>
+                        <span className="text-slate-700">{feature}</span>
+                      </li>
+                    ))}
                   </ul>
+                </div>
+              )}
+
+              {/* Specifications */}
+              {selectedProduct.specifications && selectedProduct.specifications.length > 0 && (
+                <div>
+                  <h3 className="font-bold text-lg mb-4 text-slate-900">Specifications</h3>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <table className="w-full">
+                      <tbody>
+                        {selectedProduct.specifications.map((spec, idx) => (
+                          <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                            <td className="px-4 py-3 font-semibold text-slate-900 w-1/3">{spec.key}</td>
+                            <td className="px-4 py-3 text-slate-700">{spec.value}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Rating & Reviews */}
+              <div>
+                <h3 className="font-bold text-lg mb-4 text-slate-900">Customer Rating</h3>
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-1">Average Rating</p>
+                      <p className="font-bold text-2xl flex items-center gap-2">
+                        {'⭐'.repeat(Math.floor(selectedProduct.rating))} {selectedProduct.rating}
+                      </p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-1">Customer Reviews</p>
+                      <p className="font-bold text-2xl">{selectedProduct.reviews} reviews</p>
+                    </div>
+                    <div className="bg-slate-50 p-4 rounded-lg">
+                      <p className="text-xs text-gray-600 mb-1">Product ID</p>
+                      <p className="font-bold text-lg">#{selectedProduct.id}</p>
+                    </div>
                 </div>
               </div>
 

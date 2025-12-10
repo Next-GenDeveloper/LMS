@@ -13,7 +13,7 @@ router.get('/', async (_req: Request, res: Response) => {
       title: c.title,
       description: c.description,
       price: c.price,
-      thumbnail: c.thumbnail,
+      bannerImage: c.bannerImage,
       category: c.category,
       isPublished: c.isPublished,
       createdAt: c.createdAt,
@@ -71,7 +71,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       title: c.title,
       description: c.description,
       price: c.price,
-      thumbnail: c.thumbnail,
+      bannerImage: c.bannerImage,
       category: c.category,
       isPublished: c.isPublished,
       createdAt: c.createdAt,
@@ -85,14 +85,13 @@ router.get('/:id', async (req: Request, res: Response) => {
 // Create course (admin only)
 router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
-    const { title, description, price, thumbnail, bannerImage, pdfFiles, videoFiles, category, level, duration, language, tags } = req.body || {};
+    const { title, description, price, bannerImage, pdfFiles, videoFiles, category, level, duration, language, tags } = req.body || {};
     if (!title || !description) return res.status(400).json({ message: 'title and description are required' });
     const instructor = (req as any).user?.userId;
     const course = await Course.create({
       title,
       description,
       price: Number(price) || 0,
-      thumbnail: thumbnail || '',
       bannerImage: bannerImage || '',
       pdfFiles: pdfFiles || [],
       videoFiles: videoFiles || [],
