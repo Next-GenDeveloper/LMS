@@ -20,8 +20,9 @@ export default function Home() {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Get API base URL from environment or use default
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+  // Use Next.js rewrite system for API calls
+  // Next.js will proxy /api/* requests to the backend automatically
+  const API_ENDPOINT = '/api/announcements';
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -29,28 +30,53 @@ export default function Home() {
         setIsLoading(true);
         setFetchError(null);
 
-        console.log(`Attempting to fetch announcements from: ${API_BASE_URL}/api/announcements`);
+        console.log(`Attempting to fetch announcements from: ${API_ENDPOINT}`);
 
-        const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+        // Enhanced fetch with better error handling and timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+        const response = await fetch(API_ENDPOINT, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
-          credentials: 'include', // Include cookies if needed
+          credentials: 'include',
+          signal: controller.signal,
+          mode: 'cors', // Explicitly set CORS mode
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorText = await response.text().catch(() => 'Unknown error');
+          throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
         }
 
         const data = await response.json();
         console.log('Announcements fetched successfully:', data.announcements);
 
-        // Set announcements or empty array if none exist
+        // Validate response structure
+        if (!data || !Array.isArray(data.announcements)) {
+          throw new Error('Invalid response format: expected announcements array');
+        }
+
         setAnnouncements(data.announcements || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch announcements:", error);
-        setFetchError(`Failed to fetch announcements. Please try again later.`);
+
+        // More specific error messages
+        if (error.name === 'AbortError') {
+          setFetchError('Request timed out. Please check your network connection.');
+        } else if (error.message.includes('Failed to fetch')) {
+          setFetchError('Network error: Unable to connect to the server. Please check if the backend is running.');
+        } else if (error.message.includes('HTTP error')) {
+          setFetchError(error.message);
+        } else {
+          setFetchError(`Failed to fetch announcements: ${error.message}`);
+        }
+
         // Set some dummy data for development
         if (process.env.NODE_ENV === 'development') {
           setAnnouncements([
@@ -69,8 +95,11 @@ export default function Home() {
       }
     };
 
-    fetchAnnouncements();
-  }, [API_BASE_URL]);
+    // Only fetch on client side
+    if (typeof window !== 'undefined') {
+      fetchAnnouncements();
+    }
+  }, [API_ENDPOINT]);
   return (
     <>
       {/* Hero - warm MKS style */}

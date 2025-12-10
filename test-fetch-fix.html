@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fetch Test - Announcements</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Announcements Fetch Test</h1>
+    <p>Testing the fix for the "Failed to fetch" TypeError</p>
+
+    <div id="result"></div>
+
+    <script>
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing fetch request...</p>';
+
+            try {
+                // This simulates the fixed code using relative path
+                const API_ENDPOINT = '/api/announcements';
+
+                console.log(`Attempting to fetch announcements from: ${API_ENDPOINT}`);
+
+                const response = await fetch(API_ENDPOINT, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    credentials: 'include',
+                    mode: 'cors',
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text().catch(() => 'Unknown error');
+                    throw new Error(`HTTP error! status: ${response.status}, details: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('Announcements fetched successfully:', data.announcements);
+
+                // Validate response structure
+                if (!data || !Array.isArray(data.announcements)) {
+                    throw new Error('Invalid response format: expected announcements array');
+                }
+
+                resultDiv.innerHTML = `
+                    <p class="success">✅ SUCCESS: Fetch request completed successfully!</p>
+                    <p><strong>Announcements received:</strong> ${data.announcements.length}</p>
+                    <pre>${JSON.stringify(data.announcements, null, 2)}</pre>
+                    <p class="success">The fix is working correctly!</p>
+                `;
+
+            } catch (error) {
+                console.error("Failed to fetch announcements:", error);
+                resultDiv.innerHTML = `
+                    <p class="error">❌ ERROR: ${error.message}</p>
+                    <p>This indicates the fix may need further adjustment.</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        }
+
+        // Run test when page loads
+        window.addEventListener('load', testFetch);
+    </script>
+</body>
+</html>
