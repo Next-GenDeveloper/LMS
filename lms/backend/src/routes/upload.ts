@@ -74,7 +74,6 @@ router.post('/file', requireAuth, requireRole('admin'), upload.single('file'), (
     });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Upload failed' });
-      return;
   }
 });
 
@@ -97,7 +96,6 @@ router.post('/files', requireAuth, requireRole('admin'), upload.array('files', 1
     res.json({ files });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Upload failed' });
-      return;
   }
 });
 

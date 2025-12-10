@@ -41,24 +41,29 @@ router.put('/me', requireAuth, validate(userProfileValidation), async (req: Requ
 router.put('/me/password', requireAuth, validate(changePasswordValidation), async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
   const { currentPassword, newPassword } = req.body || {};
-  if (!newPassword) res.status(400).json({ message: 'newPassword is required' });
-      return;
+  if (!newPassword) {
+    res.status(400).json({ message: 'newPassword is required' });
+    return;
+  }
   const u = await User.findById(uid).select('password');
-  if (!u) res.status(404).json({ message: 'User not found' });
-      return;
+  if (!u) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
   try {
     const { comparePassword, hashPassword } = await import('../utils/Passwordhash.ts');
     if (currentPassword) {
       const ok = await comparePassword(currentPassword, (u as any).password);
-      if (!ok) res.status(400).json({ message: 'Current password is incorrect' });
-      return;
+      if (!ok) {
+        res.status(400).json({ message: 'Current password is incorrect' });
+        return;
+      }
     }
     const hashed = await hashPassword(newPassword);
     await User.findByIdAndUpdate(uid, { password: hashed });
     res.json({ ok: true });
   } catch (e: any) {
     res.status(500).json({ message: 'Server error' });
-      return;
   }
 });
 
@@ -74,7 +79,6 @@ router.get('/:id/enrollments', requireAuth, async (req: Request, res: Response):
   const { id } = req.params;
   if (requester.userId !== id && requester.role !== 'admin') {
     res.status(403).json({ message: 'Forbidden' });
-      return;
   }
   const enrollments = await Enrollment.find({ student: id })
     .populate({ path: 'course', model: Course, select: 'title price category thumbnail' })

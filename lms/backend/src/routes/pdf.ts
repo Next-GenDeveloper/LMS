@@ -17,6 +17,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res): void => {
         error: 'Not Found',
         message: 'PDF file not found'
       });
+      return;
     }
 
     // Check if the file is actually a PDF
@@ -25,6 +26,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res): void => {
         error: 'Bad Request',
         message: 'Only PDF files can be accessed through this endpoint'
       });
+      return;
     }
 
     // Set appropriate headers for PDF
@@ -66,6 +68,7 @@ router.post('/:courseId/permissions', adminPdfAccess, async (req, res): Promise<
         error: 'Bad Request',
         message: "Action must be either 'grant' or 'revoke'"
       });
+      return;
     }
 
     // TODO: Implement actual permission management logic

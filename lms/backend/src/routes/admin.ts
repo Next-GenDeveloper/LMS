@@ -28,7 +28,6 @@ router.get('/stats', requireAuth, requireRole('admin'), async (_req: Request, re
     res.json({ users, courses, revenue });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch stats' });
-      return;
   }
 });
 
@@ -43,7 +42,6 @@ router.get('/enrollments', requireAuth, requireRole('admin'), async (_req: Reque
     res.json({ enrollments: recentEnrollments });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch enrollments' });
-      return;
   }
 });
 
@@ -55,7 +53,6 @@ router.get('/courses', requireAuth, requireRole('admin'), async (_req: Request, 
     res.json({ courses });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch courses' });
-      return;
   }
 });
 
@@ -84,7 +81,6 @@ router.get('/users', requireAuth, requireRole('admin'), async (req: Request, res
     res.json({ users, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch users' });
-      return;
   }
 });
 
@@ -97,7 +93,6 @@ router.post('/users', requireAuth, requireRole('admin'), async (req: Request, re
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       res.status(400).json({ message: 'User with this email already exists' });
-      return;
     }
 
     // Hash password
@@ -119,10 +114,8 @@ router.post('/users', requireAuth, requireRole('admin'), async (req: Request, re
     // Return user without password
     const userResponse = await User.findById(user._id).select('-password');
     res.status(201).json({ user: userResponse });
-      return;
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to create user' });
-      return;
   }
 });
 
@@ -133,12 +126,10 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     const user = await User.findById(id).select('-password');
     if (!user) {
       res.status(404).json({ message: 'User not found' });
-      return;
     }
     res.json({ user });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch user' });
-      return;
   }
 });
 
@@ -174,13 +165,11 @@ router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     const user = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
     if (!user) {
       res.status(404).json({ message: 'User not found' });
-      return;
     }
 
     res.json({ user });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update user' });
-      return;
   }
 });
 
@@ -204,7 +193,6 @@ router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Reque
     res.json({ message: 'User deleted successfully' });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to delete user' });
-      return;
   }
 });
 
@@ -217,7 +205,6 @@ router.post('/users', requireAuth, requireRole('admin'), async (req: Request, re
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400).json({ message: 'User with this email already exists' });
-      return;
     }
 
     // Hash password
@@ -243,10 +230,8 @@ router.post('/users', requireAuth, requireRole('admin'), async (req: Request, re
     // Return user without password
     const userResponse = await User.findById(user._id).select('-password');
     res.status(201).json({ user: userResponse });
-      return;
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to create user' });
-      return;
   }
 });
 
@@ -273,13 +258,11 @@ router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
 
     if (!user) {
       res.status(404).json({ message: 'User not found' });
-      return;
     }
 
     res.json({ user });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update user' });
-      return;
   }
 });
 
@@ -304,7 +287,6 @@ router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Reque
     res.json({ message: 'User deleted successfully' });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to delete user' });
-      return;
   }
 });
 
@@ -315,12 +297,10 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     const user = await User.findById(id).select('-password');
     if (!user) {
       res.status(404).json({ message: 'User not found' });
-      return;
     }
     res.json({ user });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch user' });
-      return;
   }
 });
 
@@ -345,10 +325,8 @@ router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, 
 
     await course.save();
     res.status(201).json({ course });
-      return;
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to create course' });
-      return;
   }
 });
 
@@ -361,13 +339,11 @@ router.put('/courses/:id', requireAuth, requireRole('admin'), async (req: Reques
 
     if (!course) {
       res.status(404).json({ message: 'Course not found' });
-      return;
     }
 
     res.json({ course });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update course' });
-      return;
   }
 });
 
@@ -378,7 +354,6 @@ router.delete('/courses/:id', requireAuth, requireRole('admin'), async (req: Req
     res.json({ message: 'Course deleted successfully' });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to delete course' });
-      return;
   }
 });
 
@@ -400,7 +375,6 @@ router.get('/enrollments', requireAuth, requireRole('admin'), async (req: Reques
     res.json({ enrollments, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch enrollments' });
-      return;
   }
 });
 
@@ -414,7 +388,6 @@ router.get('/announcements', requireAuth, requireRole('admin'), async (_req: Req
     res.json({ announcements });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to fetch announcements' });
-      return;
   }
 });
 
@@ -432,10 +405,8 @@ router.post('/announcements', requireAuth, requireRole('admin'), async (req: Req
 
     await announcement.save();
     res.status(201).json({ announcement });
-      return;
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to create announcement' });
-      return;
   }
 });
 
@@ -453,13 +424,11 @@ router.put('/announcements/:id', requireAuth, requireRole('admin'), async (req: 
 
     if (!announcement) {
       res.status(404).json({ message: 'Announcement not found' });
-      return;
     }
 
     res.json({ announcement });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update announcement' });
-      return;
   }
 });
 
@@ -470,7 +439,6 @@ router.delete('/announcements/:id', requireAuth, requireRole('admin'), async (re
     res.json({ message: 'Announcement deleted successfully' });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to delete announcement' });
-      return;
   }
 });
 
@@ -499,7 +467,6 @@ router.put('/settings/password', requireAuth, requireRole('admin'), async (req: 
     res.json({ message: 'Password updated successfully' });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update password' });
-      return;
   }
 });
 
