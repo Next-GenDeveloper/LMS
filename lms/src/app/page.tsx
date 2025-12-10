@@ -17,13 +17,60 @@ interface Announcement {
 
 export default function Home() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Get API base URL from environment or use default
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/announcements")
-      .then(res => res.json())
-      .then(data => setAnnouncements(data.announcements || []))
-      .catch(err => console.error("Failed to fetch announcements", err));
-  }, []);
+    const fetchAnnouncements = async () => {
+      try {
+        setIsLoading(true);
+        setFetchError(null);
+
+        console.log(`Attempting to fetch announcements from: ${API_BASE_URL}/api/announcements`);
+
+        const response = await fetch(`${API_BASE_URL}/api/announcements`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies if needed
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Announcements fetched successfully:', data.announcements);
+
+        // Set announcements or empty array if none exist
+        setAnnouncements(data.announcements || []);
+      } catch (error) {
+        console.error("Failed to fetch announcements:", error);
+        setFetchError(`Failed to fetch announcements. Please try again later.`);
+        // Set some dummy data for development
+        if (process.env.NODE_ENV === 'development') {
+          setAnnouncements([
+            {
+              _id: 'dev-1',
+              title: 'Development Mode',
+              message: 'Using dummy announcements since the API is not available.',
+              type: 'info',
+              createdAt: new Date().toISOString(),
+              createdBy: { firstName: 'System', lastName: 'Admin' }
+            }
+          ]);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnnouncements();
+  }, [API_BASE_URL]);
   return (
     <>
       {/* Hero - warm MKS style */}
@@ -130,7 +177,35 @@ export default function Home() {
       </section>
 
       {/* Announcements Section */}
-      {announcements.length > 0 && (
+      {isLoading ? (
+        <section className="py-10 bg-amber-50">
+          <div className="container mx-auto px-6 text-center">
+            <p className="text-orange-500 font-medium">Loading announcements...</p>
+          </div>
+        </section>
+      ) : fetchError ? (
+        <section className="py-10 bg-amber-50">
+          <div className="container mx-auto px-6">
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 max-w-4xl mx-auto">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">
+                    {fetchError}
+                  </p>
+                  <p className="text-sm text-red-600 mt-1">
+                    The announcements service is temporarily unavailable. Some features may be limited.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : announcements.length > 0 ? (
         <section className="py-10 bg-amber-50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-8">
@@ -161,6 +236,28 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="py-10 bg-amber-50">
+          <div className="container mx-auto px-6">
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 max-w-4xl mx-auto">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-blue-700">
+                    No announcements available at this time.
+                  </p>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Check back later for important updates and news.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
