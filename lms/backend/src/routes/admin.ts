@@ -85,14 +85,14 @@ router.get('/users', requireAuth, requireRole('admin'), async (req: Request, res
 });
 
 // Create new user (admin only)
-router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+router.post('/users', requireAuth, requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { firstName, lastName, email, password, role = 'student', phone, bio } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      res.status(400).json({ message: 'User with this email already exists' });
     }
 
     // Hash password
@@ -125,7 +125,7 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     const { id } = req.params;
     const user = await User.findById(id).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
     }
     res.json({ user });
   } catch (e: any) {
@@ -149,20 +149,22 @@ router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     };
 
     // Only update email if it's changed and doesn't conflict
-    if (email && email.toLowerCase().trim() !== (await User.findById(id)).email) {
+    const currentUser = await User.findById(id);
+    if (email && currentUser && email.toLowerCase().trim() !== currentUser.email) {
       const existingUser = await User.findOne({
         email: email.toLowerCase().trim(),
         _id: { $ne: id }
       });
       if (existingUser) {
-        return res.status(400).json({ message: 'Email already in use by another user' });
+        res.status(400).json({ message: 'Email already in use by another user' });
+        return;
       }
       updateData.email = email.toLowerCase().trim();
     }
 
     const user = await User.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
     }
 
     res.json({ user });
@@ -179,10 +181,12 @@ router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Reque
     // Prevent deleting admin users
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
     if (user.role === 'admin') {
-      return res.status(400).json({ message: 'Cannot delete admin users' });
+      res.status(400).json({ message: 'Cannot delete admin users' });
+      return;
     }
 
     await User.findByIdAndDelete(id);
@@ -200,7 +204,7 @@ router.post('/users', requireAuth, requireRole('admin'), async (req: Request, re
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      res.status(400).json({ message: 'User with this email already exists' });
     }
 
     // Hash password
@@ -253,7 +257,7 @@ router.put('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     ).select('-password');
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
     }
 
     res.json({ user });
@@ -270,11 +274,13 @@ router.delete('/users/:id', requireAuth, requireRole('admin'), async (req: Reque
     // Prevent deleting admin users
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     if (user.role === 'admin') {
-      return res.status(400).json({ message: 'Cannot delete admin users' });
+      res.status(400).json({ message: 'Cannot delete admin users' });
+      return;
     }
 
     await User.findByIdAndDelete(id);
@@ -290,7 +296,7 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
     const { id } = req.params;
     const user = await User.findById(id).select('-password');
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
     }
     res.json({ user });
   } catch (e: any) {
@@ -302,7 +308,6 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
 router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
     const { title, description, thumbnail, category, price, level, duration, language, tags, modules } = req.body;
-    const user = (req as any).user;
 
     const course = new Course({
       title,
@@ -333,7 +338,7 @@ router.put('/courses/:id', requireAuth, requireRole('admin'), async (req: Reques
     const course = await Course.findByIdAndUpdate(id, updates, { new: true });
 
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      res.status(404).json({ message: 'Course not found' });
     }
 
     res.json({ course });
@@ -418,7 +423,7 @@ router.put('/announcements/:id', requireAuth, requireRole('admin'), async (req: 
     }, { new: true });
 
     if (!announcement) {
-      return res.status(404).json({ message: 'Announcement not found' });
+      res.status(404).json({ message: 'Announcement not found' });
     }
 
     res.json({ announcement });
@@ -445,12 +450,14 @@ router.put('/settings/password', requireAuth, requireRole('admin'), async (req: 
 
     const adminUser = await User.findById(user.userId);
     if (!adminUser) {
-      return res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: 'User not found' });
+      return;
     }
 
     const isMatch = await comparePassword(currentPassword, adminUser.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Current password is incorrect' });
+      res.status(400).json({ message: 'Current password is incorrect' });
+      return;
     }
 
     const hashed = await hashPassword(newPassword);
