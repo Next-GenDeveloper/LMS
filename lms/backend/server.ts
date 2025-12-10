@@ -1,5 +1,5 @@
-import { connectMongoDB, connectPostgreSQL } from './src/config/database.ts';
-import { ENV } from './src/config/env.ts';
+import { connectMongoDB, connectPostgreSQL } from './src/config/database';
+import { ENV } from './src/config/env';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
@@ -19,7 +19,7 @@ async function bootstrap() {
     const { seedAdmin } = await import('./src/utils/seedAdmin.ts');
     await seedAdmin();
 
-    const { default: app } = await import('./app.ts');
+    const { default: app } = await import('./app');
 
     // Check for SSL certificates
     const sslKeyPath = process.env.SSL_KEY_PATH;

@@ -140,6 +140,12 @@ export default function Home() {
                 >
                   Browse courses
                 </Link>
+                <Link
+                  href="/shop"
+                  className="rounded-full border border-pink-300 bg-white/70 px-7 py-3 text-sm font-semibold text-pink-600 transition hover:bg-pink-50"
+                >
+                  9Tangle Store
+                </Link>
               </div>
             </div>
 

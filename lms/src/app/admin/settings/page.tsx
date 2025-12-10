@@ -1,191 +1,216 @@
-"use client";
+'use client';
 
-import { useState, FormEvent } from "react";
+import AdminSidebar from '@/components/AdminSidebar';
+import { useState } from 'react';
 
-export default function AdminSettingsPage() {
-  const [formData, setFormData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+export default function SettingsPage() {
+  const [settings, setSettings] = useState({
+    storeName: '9Tangle',
+    storeEmail: 'admin@9tangle.com',
+    storeTax: '8%',
+    freeShippingThreshold: '50',
+    currency: 'USD',
+    timezone: 'EST',
+    maintenance: false,
   });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState<"success" | "error">("success");
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setMessage("");
+  const [saved, setSaved] = useState(false);
 
-    if (formData.newPassword !== formData.confirmPassword) {
-      setMessage("New passwords do not match");
-      setMessageType("error");
-      return;
-    }
-
-    if (formData.newPassword.length < 8) {
-      setMessage("New password must be at least 8 characters long");
-      setMessageType("error");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const token = localStorage.getItem("authToken");
-      const response = await fetch("http://localhost:5000/api/admin/settings/password", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          currentPassword: formData.currentPassword,
-          newPassword: formData.newPassword,
-        }),
-      });
-
-      if (response.ok) {
-        if (!response.headers.get('content-type')?.includes('application/json')) {
-          throw new Error('Expected JSON response');
-        }
-        const data = await response.json();
-        setMessage("Password updated successfully!");
-        setMessageType("success");
-        setFormData({
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-      } else {
-        if (response.headers.get('content-type')?.includes('application/json')) {
-          const data = await response.json();
-          setMessage(data.message || "Failed to update password");
-        } else {
-          setMessage("Failed to update password: Server error");
-        }
-        setMessageType("error");
-      }
-    } catch (error) {
-      setMessage("Network error. Please try again.");
-      setMessageType("error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+  const handleChange = (field: string, value: any) => {
+    setSettings(prev => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [field]: value,
     }));
   };
 
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-600 mt-1">Manage your admin account settings</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex flex-col md:flex-row">
+      <AdminSidebar />
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Change Password</h2>
+      {/* Main Content Area */}
+      <div className="flex-1">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-8 mt-14 md:mt-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <h1 className="text-4xl font-bold">Settings</h1>
+            <p className="text-white/90 mt-2">Manage store configuration and preferences</p>
+          </div>
+        </div>
 
-        {message && (
-          <div className={`mb-4 p-4 rounded-lg ${
-            messageType === "success"
-              ? "bg-green-50 border border-green-200 text-green-700"
-              : "bg-red-50 border border-red-200 text-red-700"
-          }`}>
-            {message}
-          </div>
-        )}
+        {/* Main Content */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+          {/* Success Message */}
+          {saved && (
+            <div className="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg animate-pulse">
+              ✓ Settings saved successfully!
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Current Password *
-            </label>
-            <input
-              type="password"
-              name="currentPassword"
-              value={formData.currentPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            />
+          {/* Store Settings */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Store Settings</h2>
+
+            <div className="space-y-6">
+              <div>
+                <label className="block font-semibold text-slate-700 mb-2">Store Name</label>
+                <input
+                  type="text"
+                  value={settings.storeName}
+                  onChange={(e) => handleChange('storeName', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 mb-2">Store Email</label>
+                <input
+                  type="email"
+                  value={settings.storeEmail}
+                  onChange={(e) => handleChange('storeEmail', e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-2">Currency</label>
+                  <select
+                    value={settings.currency}
+                    onChange={(e) => handleChange('currency', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>GBP</option>
+                    <option>JPY</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-2">Timezone</label>
+                  <select
+                    value={settings.timezone}
+                    onChange={(e) => handleChange('timezone', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option>EST</option>
+                    <option>CST</option>
+                    <option>MST</option>
+                    <option>PST</option>
+                    <option>UTC</option>
+                  </select>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              New Password *
-            </label>
-            <input
-              type="password"
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder="At least 8 characters"
-              required
-            />
+          {/* Pricing Settings */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Pricing & Shipping</h2>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-2">Sales Tax (%)</label>
+                  <input
+                    type="number"
+                    value={settings.storeTax}
+                    onChange={(e) => handleChange('storeTax', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="8"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-2">Free Shipping Threshold ($)</label>
+                  <input
+                    type="number"
+                    value={settings.freeShippingThreshold}
+                    onChange={(e) => handleChange('freeShippingThreshold', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="50"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  💡 Orders over ${settings.freeShippingThreshold} will qualify for free shipping
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm New Password *
-            </label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              required
-            />
+          {/* Maintenance Mode */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Maintenance</h2>
+
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div>
+                <p className="font-semibold text-slate-900">Maintenance Mode</p>
+                <p className="text-sm text-gray-600">Keep your store offline while making updates</p>
+              </div>
+              <button
+                onClick={() => handleChange('maintenance', !settings.maintenance)}
+                className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                  settings.maintenance ? 'bg-red-600' : 'bg-green-600'
+                }`}
+              >
+                <span
+                  className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                    settings.maintenance ? 'translate-x-7' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {settings.maintenance && (
+              <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-sm text-red-800">
+                  ⚠️ Your store is currently in maintenance mode and customers cannot place orders.
+                </p>
+              </div>
+            )}
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">Password Requirements:</h3>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• At least 8 characters long</li>
-              <li>• Should be different from your current password</li>
-              <li>• Use a mix of letters, numbers, and special characters</li>
-            </ul>
+          {/* Notification Settings */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-8 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Notifications</h2>
+
+            <div className="space-y-4">
+              {[
+                { label: 'Email notifications for new orders', key: 'emailOrders' },
+                { label: 'Email notifications for low stock', key: 'emailStock' },
+                { label: 'Email notifications for customer reviews', key: 'emailReviews' },
+                { label: 'Daily sales summary email', key: 'emailDaily' },
+              ].map((item) => (
+                <div key={item.key} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition">
+                  <input
+                    type="checkbox"
+                    id={item.key}
+                    defaultChecked
+                    className="w-5 h-5 cursor-pointer"
+                  />
+                  <label htmlFor={item.key} className="font-semibold text-slate-700 cursor-pointer">
+                    {item.label}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg font-medium flex items-center"
-            >
-              {loading && (
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              )}
-              Update Password
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <p className="text-sm text-gray-900">admin@9tangle.com</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Role</label>
-            <p className="text-sm text-gray-900">Administrator</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Last Login</label>
-            <p className="text-sm text-gray-900">{new Date().toLocaleString()}</p>
-          </div>
+          {/* Save Button */}
+          <button
+            onClick={handleSave}
+            className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 transition"
+          >
+            Save Settings
+          </button>
         </div>
       </div>
     </div>

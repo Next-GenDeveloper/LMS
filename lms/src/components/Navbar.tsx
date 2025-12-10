@@ -3,7 +3,13 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import ThemeToggle from "./ThemeToggle";
 
-export default function Navbar() {
+export function Navbar() {
+  return <NavbarContent />;
+}
+
+export default Navbar;
+
+function NavbarContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
@@ -63,6 +69,18 @@ export default function Navbar() {
             Home
           </Link>
           <Link
+            href="/shop"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+          >
+            Shop
+          </Link>
+          <Link
+            href="/tracking"
+            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+          >
+            Track Order
+          </Link>
+          <Link
             href="/courses"
             className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
           >
@@ -78,6 +96,12 @@ export default function Navbar() {
 
         {/* Auth Buttons / User Menu */}
         <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <Link
+            href="/cart"
+            className="relative px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+          >
+            🛒 Cart
+          </Link>
           <ThemeToggle />
           {isLoggedIn ? (
             <>
@@ -206,6 +230,27 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Home
+            </Link>
+            <Link
+              href="/shop"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Shop
+            </Link>
+            <Link
+              href="/cart"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              🛒 Cart
+            </Link>
+            <Link
+              href="/tracking"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Track Order
             </Link>
             <Link
               href="/courses"
