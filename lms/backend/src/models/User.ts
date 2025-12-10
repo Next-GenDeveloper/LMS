@@ -19,6 +19,12 @@ export interface IUser extends Document {
     preferredLanguage?: string;
     notifications?: boolean;
   };
+  achievements?: {
+    certificates: mongoose.Types.ObjectId[];
+    completedQuizzes: mongoose.Types.ObjectId[];
+    completedChallenges: mongoose.Types.ObjectId[];
+    points: number;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +45,12 @@ const userSchema = new Schema<IUser>(
       interests: { type: [String], default: [] },
       preferredLanguage: { type: String, default: 'en' },
       notifications: { type: Boolean, default: true },
+    },
+    achievements: {
+      certificates: [{ type: Schema.Types.ObjectId, ref: 'Certificate' }],
+      completedQuizzes: [{ type: Schema.Types.ObjectId, ref: 'Quiz' }],
+      completedChallenges: [{ type: Schema.Types.ObjectId, ref: 'Challenge' }],
+      points: { type: Number, default: 0 },
     },
   },
   { timestamps: true }

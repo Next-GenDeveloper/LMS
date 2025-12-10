@@ -2,6 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
+import LiveChat from "@/components/LiveChat";
+import StructuredExamination from "@/components/StructuredExamination";
+import CompetitiveChallenges from "@/components/CompetitiveChallenges";
 
 // Demo course data - replace with API fetch
 const courseData: Record<string, Course> = {
@@ -588,5 +591,15 @@ export default function CourseDetailPage({
         </div>
       </div>
     </div>
-  );
+
+    {/* Competitive Challenges */}
+    <CompetitiveChallenges courseId={id} />
+
+    {/* Structured Examinations */}
+    <StructuredExamination courseId={id} />
+
+    {/* Live Chat Component */}
+    <LiveChat courseId={id} />
+  </div>
+);
 }

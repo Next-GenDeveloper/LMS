@@ -28,6 +28,7 @@ export interface ICourse extends Document {
   modules: IModule[];
   quizzes: mongoose.Types.ObjectId[];
   assignments: mongoose.Types.ObjectId[];
+  challenges: mongoose.Types.ObjectId[];
   enrollmentCount: number;
   level: 'beginner' | 'intermediate' | 'advanced';
   duration: number; // total hours
@@ -67,6 +68,7 @@ const courseSchema = new Schema<ICourse>(
     modules: [moduleSchema],
     quizzes: [{ type: Schema.Types.ObjectId, ref: 'Quiz' }],
     assignments: [{ type: Schema.Types.ObjectId, ref: 'Assignment' }],
+    challenges: [{ type: Schema.Types.ObjectId, ref: 'Challenge' }],
     enrollmentCount: { type: Number, default: 0 },
     level: { type: String, enum: ['beginner', 'intermediate', 'advanced'], default: 'beginner' },
     duration: { type: Number }, // hours
