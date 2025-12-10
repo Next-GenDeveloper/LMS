@@ -5,7 +5,7 @@ import { verifyToken } from '../utils/jwt.ts';
 /**
  * Middleware to secure PDF files and ensure only enrolled users with completed payments can access them
  */
-export async function pdfSecurity(req: Request, res: Response, next: NextFunction) {
+export async function pdfSecurity(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // Extract token from query parameters or authorization header
     const token = req.query.token as string || req.headers.authorization?.split(' ')[1];
@@ -72,7 +72,7 @@ export async function pdfSecurity(req: Request, res: Response, next: NextFunctio
 /**
  * Middleware to check admin access for PDF management
  */
-export async function adminPdfAccess(req: Request, res: Response, next: NextFunction) {
+export async function adminPdfAccess(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     // Extract token from authorization header
     const authHeader = req.headers.authorization;

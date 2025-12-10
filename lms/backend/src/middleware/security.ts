@@ -35,7 +35,7 @@ export const passwordResetRateLimit = rateLimit({
 });
 
 // Security headers middleware
-export function securityHeaders(req: Request, res: Response, next: any) {
+export function securityHeaders(_req: Request, res: Response, next: any): void {
   // Prevent clickjacking
   res.setHeader('X-Frame-Options', 'DENY');
 
@@ -63,7 +63,7 @@ export function securityHeaders(req: Request, res: Response, next: any) {
 }
 
 // Request logging middleware for security monitoring
-export function securityLogger(req: Request, res: Response, next: any) {
+export function securityLogger(req: Request, _res: Response, next: any): void {
   const timestamp = new Date().toISOString();
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
   const userAgent = req.get('User-Agent') || 'unknown';
