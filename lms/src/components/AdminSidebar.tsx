@@ -7,10 +7,13 @@ import { useState } from 'react';
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
+  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   const menuItems = [
     { label: 'Dashboard', href: '/admin', icon: '📊' },
-    { label: 'Products', href: '/admin/products', icon: '📦' },
+    { label: 'Products', href: '/admin/products', icon: '📦', submenu: [
+      { label: 'Track Orders', href: '/tracking', icon: '📍' }
+    ]},
     { label: 'Orders', href: '/admin/orders', icon: '🛒' },
     { label: 'Announcements', href: '/admin/announcements', icon: '📢' },
     { label: 'Analytics', href: '/admin/analytics', icon: '📈' },
@@ -56,20 +59,61 @@ export default function AdminSidebar() {
         {/* Navigation Menu */}
         <nav className="mt-6">
           {menuItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-4 px-6 py-4 transition-all ${
-                isActive(item.href)
-                  ? 'bg-blue-600 border-r-4 border-orange-500 shadow-inner'
-                  : 'hover:bg-blue-600/50'
-              }`}
-              onClick={() => setIsOpen(false)}
-            >
-              <span className="text-2xl">{item.icon}</span>
-              <span className="font-semibold">{item.label}</span>
-              {isActive(item.href) && <span className="ml-auto">→</span>}
-            </Link>
+            <div key={item.href}>
+              {item.submenu ? (
+                <>
+                  <button
+                    onClick={() => setExpandedMenu(expandedMenu === item.label ? null : item.label)}
+                    className={`flex items-center gap-4 px-6 py-4 transition-all w-full ${
+                      isActive(item.href)
+                        ? 'bg-blue-600 border-r-4 border-orange-500 shadow-inner'
+                        : 'hover:bg-blue-600/50'
+                    }`}
+                  >
+                    <span className="text-2xl">{item.icon}</span>
+                    <span className="font-semibold">{item.label}</span>
+                    {isActive(item.href) && <span className="ml-auto">→</span>}
+                    <svg
+                      className={`ml-auto w-4 h-4 transition-transform ${expandedMenu === item.label ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {expandedMenu === item.label && (
+                    <div className="bg-blue-800/50">
+                      {item.submenu.map((subitem) => (
+                        <Link
+                          key={subitem.href}
+                          href={subitem.href}
+                          className="flex items-center gap-3 px-10 py-3 text-sm hover:bg-blue-600/50 transition-all"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <span className="text-lg">{subitem.icon}</span>
+                          <span>{subitem.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-4 px-6 py-4 transition-all ${
+                    isActive(item.href)
+                      ? 'bg-blue-600 border-r-4 border-orange-500 shadow-inner'
+                      : 'hover:bg-blue-600/50'
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <span className="text-2xl">{item.icon}</span>
+                  <span className="font-semibold">{item.label}</span>
+                  {isActive(item.href) && <span className="ml-auto">→</span>}
+                </Link>
+              )}
+            </div>
           ))}
         </nav>
 

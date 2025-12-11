@@ -2,6 +2,14 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import AdminSidebar from '@/components/AdminSidebar';
+
+interface FileWithPreview {
+  url: string;
+  name: string;
+  size: number;
+  type: string;
+}
 
 export default function CreateCoursePage() {
   const router = useRouter();
@@ -20,6 +28,10 @@ export default function CreateCoursePage() {
     pdfFiles: [] as string[],
     videoFiles: [] as string[],
   });
+  
+  const [pdfPreviews, setPdfPreviews] = useState<FileWithPreview[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<FileWithPreview[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
 
   const uploadFile = async (file: File): Promise<string> => {
     const token = localStorage.getItem("authToken");
@@ -53,17 +65,57 @@ export default function CreateCoursePage() {
   const handleFileUpload = async (files: FileList | null, type: 'banner' | 'pdf' | 'video') => {
     if (!files || files.length === 0) return;
 
+    // Validate file sizes
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const sizeInMB = file.size / (1024 * 1024);
+      
+      if (type === 'pdf' && sizeInMB > 10) {
+        alert(`PDF file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 10 MB.`);
+        return;
+      }
+      
+      if (type === 'video' && sizeInMB > 35) {
+        alert(`Video file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 35 MB.`);
+        return;
+      }
+    }
+
     setUploading(true);
     try {
       if (type === 'banner') {
         const url = await uploadFile(files[0]);
         setFormData(prev => ({ ...prev, bannerImage: url }));
       } else if (type === 'pdf') {
-        const urls = await Promise.all(Array.from(files).map(file => uploadFile(file)));
+        const newPreviews: FileWithPreview[] = [];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const url = await uploadFile(file);
+          newPreviews.push({
+            url,
+            name: file.name,
+            size: file.size,
+            type: file.type
+          });
+        }
+        const urls = newPreviews.map(p => p.url);
         setFormData(prev => ({ ...prev, pdfFiles: [...prev.pdfFiles, ...urls] }));
+        setPdfPreviews(prev => [...prev, ...newPreviews]);
       } else if (type === 'video') {
-        const urls = await Promise.all(Array.from(files).map(file => uploadFile(file)));
+        const newPreviews: FileWithPreview[] = [];
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const url = await uploadFile(file);
+          newPreviews.push({
+            url,
+            name: file.name,
+            size: file.size,
+            type: file.type
+          });
+        }
+        const urls = newPreviews.map(p => p.url);
         setFormData(prev => ({ ...prev, videoFiles: [...prev.videoFiles, ...urls] }));
+        setVideoPreviews(prev => [...prev, ...newPreviews]);
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -71,6 +123,22 @@ export default function CreateCoursePage() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const removePdf = (index: number) => {
+    setPdfPreviews(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({ ...prev, pdfFiles: prev.pdfFiles.filter((_, i) => i !== index) }));
+  };
+
+  const removeVideo = (index: number) => {
+    setVideoPreviews(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({ ...prev, videoFiles: prev.videoFiles.filter((_, i) => i !== index) }));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -123,213 +191,350 @@ export default function CreateCoursePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Create New Course</h1>
-        <button
-          onClick={() => router.back()}
-          className="text-gray-600 hover:text-gray-900"
-        >
-          ← Back
-        </button>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Course Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Banner Image
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e.target.files, 'banner')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                disabled={uploading}
-              />
-              {formData.bannerImage && (
-                <p className="text-sm text-green-600 mt-1">Banner uploaded successfully</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                PDF Files
-              </label>
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={(e) => handleFileUpload(e.target.files, 'pdf')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                disabled={uploading}
-              />
-              {formData.pdfFiles.length > 0 && (
-                <p className="text-sm text-green-600 mt-1">{formData.pdfFiles.length} PDF(s) uploaded</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Video Files
-              </label>
-              <input
-                type="file"
-                accept="video/*"
-                multiple
-                onChange={(e) => handleFileUpload(e.target.files, 'video')}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                disabled={uploading}
-              />
-              {formData.videoFiles.length > 0 && (
-                <p className="text-sm text-green-600 mt-1">{formData.videoFiles.length} video(s) uploaded</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
-              </label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="e.g., Programming, Design, Marketing"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Price (USD) *
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Level *
-              </label>
-              <select
-                name="level"
-                value={formData.level}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex flex-col md:flex-row">
+      <AdminSidebar />
+      
+      <div className="flex-1">
+        {/* Premium Header */}
+        <div className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white py-12 mt-14 md:mt-0 overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-xl">
+                  <span className="text-3xl">📚</span>
+                </div>
+                <div>
+                  <h1 className="text-4xl font-extrabold mb-1">Create New Course</h1>
+                  <p className="text-white/90 text-lg">Build engaging courses with videos and PDFs</p>
+                </div>
+              </div>
+              <button
+                onClick={() => router.back()}
+                className="px-4 py-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-xl font-semibold transition"
               >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+                ← Back
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 border-2 border-gray-200">
+            <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Section: Basic Information */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                <span className="text-xl">📝</span>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">Basic Information</h2>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration (hours) *
-              </label>
-              <input
-                type="number"
-                name="duration"
-                value={formData.duration}
-                onChange={handleChange}
-                min="1"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-blue-500">📌</span> Course Title *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="e.g., Complete Web Development Bootcamp"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Language *
-              </label>
-              <input
-                type="text"
-                name="language"
-                value={formData.language}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags (comma-separated)
-              </label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="javascript, react, web-development"
-              />
+              <div className="md:col-span-2">
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-blue-500">📄</span> Description *
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="Provide a detailed description of what students will learn..."
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition resize-none"
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4">
+
+          {/* Section: Course Media */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                <span className="text-xl">🎬</span>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">Course Media</h2>
+            </div>
+
+            <div className="space-y-6">
+              {/* Banner Image */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-green-500">🖼️</span> Banner Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e.target.files, 'banner')}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
+                  disabled={uploading}
+                />
+                {formData.bannerImage && (
+                  <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-xl flex items-center gap-2">
+                    <span className="text-green-600 text-xl">✓</span>
+                    <span className="text-sm font-semibold text-green-700">Banner uploaded successfully</span>
+                  </div>
+                )}
+              </div>
+
+              {/* PDF Files */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-red-500">📄</span> PDF Files (Max 10 MB each)
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  onChange={(e) => handleFileUpload(e.target.files, 'pdf')}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
+                  disabled={uploading}
+                />
+                <p className="text-xs text-slate-600 mt-1">Upload course materials, notes, or resources in PDF format</p>
+                
+                {/* PDF Previews */}
+                {pdfPreviews.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm font-bold text-slate-700">Uploaded PDFs ({pdfPreviews.length})</p>
+                    {pdfPreviews.map((pdf, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <span className="text-2xl">📄</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-slate-900 text-sm line-clamp-1">{pdf.name}</p>
+                            <p className="text-xs text-slate-600">{formatFileSize(pdf.size)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={`http://localhost:5000${pdf.url}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-xs font-bold"
+                          >
+                            Preview
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => removePdf(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Video Files */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-purple-500">🎥</span> Video Files (Max 35 MB each)
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={(e) => handleFileUpload(e.target.files, 'video')}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                  disabled={uploading}
+                />
+                <p className="text-xs text-slate-600 mt-1">Upload course lessons and tutorial videos</p>
+                
+                {/* Video Previews */}
+                {videoPreviews.length > 0 && (
+                  <div className="mt-4 space-y-3">
+                    <p className="text-sm font-bold text-slate-700">Uploaded Videos ({videoPreviews.length})</p>
+                    {videoPreviews.map((video, index) => (
+                      <div key={index} className="bg-purple-50 border-2 border-purple-200 rounded-xl p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                              <span className="text-2xl">🎥</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-slate-900 text-sm line-clamp-1">{video.name}</p>
+                              <p className="text-xs text-slate-600">{formatFileSize(video.size)}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeVideo(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-xs font-bold"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        {/* Video Preview */}
+                        <video
+                          src={`http://localhost:5000${video.url}`}
+                          controls
+                          className="w-full rounded-lg"
+                          style={{ maxHeight: '300px' }}
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Section: Course Details */}
+          <div>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-pink-500 rounded-lg flex items-center justify-center">
+                <span className="text-xl">⚙️</span>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900">Course Details</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">📂</span> Category *
+                </label>
+                <input
+                  type="text"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  placeholder="e.g., Programming, Design, Marketing"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">💰</span> Price (USD) *
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">📊</span> Level *
+                </label>
+                <select
+                  name="level"
+                  value={formData.level}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition font-semibold"
+                >
+                  <option value="beginner">🟢 Beginner</option>
+                  <option value="intermediate">🟡 Intermediate</option>
+                  <option value="advanced">🔴 Advanced</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">⏱️</span> Duration (hours) *
+                </label>
+                <input
+                  type="number"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  min="1"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  placeholder="e.g., 10"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">🌐</span> Language *
+                </label>
+                <input
+                  type="text"
+                  name="language"
+                  value={formData.language}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  placeholder="English"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
+                  <span className="text-orange-500">🏷️</span> Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
+                  placeholder="javascript, react, web-development"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Buttons */}
+          <div className="flex justify-end gap-4 pt-6 border-t-2 border-gray-200">
             <button
               type="button"
               onClick={() => router.back()}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-8 py-3 border-2 border-gray-300 rounded-xl text-slate-700 hover:bg-gray-50 font-bold transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading || uploading}
-              className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg font-medium flex items-center"
+              className="px-8 py-3 bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 disabled:opacity-50 text-white rounded-xl font-bold flex items-center gap-2 shadow-lg hover:shadow-xl transition"
             >
               {(loading || uploading) && (
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               )}
-              {uploading ? "Uploading..." : loading ? "Creating..." : "Create Course"}
+              {uploading ? "⏳ Uploading Files..." : loading ? "✨ Creating Course..." : "🚀 Create Course"}
             </button>
           </div>
         </form>
+      </div>
+        </div>
       </div>
     </div>
   );

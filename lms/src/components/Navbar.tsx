@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ThemeToggle from "./ThemeToggle";
 
 export function Navbar() {
@@ -9,12 +9,215 @@ export function Navbar() {
 
 export default Navbar;
 
+// Cart Dropdown Component with Checkout Button
+function CartDropdown({ cartItemCount, cartItems, showCartPreview, setShowCartPreview }: { 
+  cartItemCount: number, 
+  cartItems: any[], 
+  showCartPreview: boolean, 
+  setShowCartPreview: (show: boolean) => void 
+}) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCartPreview(false);
+      }
+    };
+
+    if (showCartPreview) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCartPreview, setShowCartPreview]);
+
+  const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setShowCartPreview(!showCartPreview)}
+        className="relative px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+      >
+        🛒 Cart
+        {cartItemCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {cartItemCount}
+          </span>
+        )}
+      </button>
+      
+      {showCartPreview && cartItemCount > 0 && (
+        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
+          <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-orange-500 to-pink-500">
+            <h3 className="font-bold text-white text-lg">Shopping Cart ({cartItemCount})</h3>
+          </div>
+          
+          <div className="max-h-80 overflow-y-auto p-4 space-y-3">
+            {cartItems.slice(0, 4).map((item) => (
+              <div key={item.id} className="flex gap-3 pb-3 border-b border-gray-100 last:border-0">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {item.images && item.images.length > 0 ? (
+                    item.images[0].startsWith('data:') || item.images[0].startsWith('http') ? (
+                      <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-2xl">{item.images[0]}</span>
+                    )
+                  ) : (
+                    <span className="text-2xl">{item.image}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm line-clamp-1">{item.name}</p>
+                  <p className="text-xs text-slate-600">Qty: {item.quantity}</p>
+                  <p className="text-orange-500 font-bold text-sm">Rs. {(item.price * item.quantity).toLocaleString()}</p>
+                </div>
+              </div>
+            ))}
+            {cartItems.length > 4 && (
+              <p className="text-center text-sm text-slate-600">+{cartItems.length - 4} more items</p>
+            )}
+          </div>
+          
+          <div className="p-4 border-t border-gray-200 bg-gray-50 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-slate-900">Total:</span>
+              <span className="text-xl font-bold text-orange-500">Rs. {total.toLocaleString()}</span>
+            </div>
+            <Link
+              href="/checkout"
+              className="block w-full py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg font-semibold hover:from-orange-600 hover:to-pink-600 transition text-center"
+              onClick={() => setShowCartPreview(false)}
+            >
+              Checkout Now
+            </Link>
+            <Link
+              href="/cart"
+              className="block w-full py-2 text-center text-blue-600 font-semibold hover:text-blue-700 text-sm"
+              onClick={() => setShowCartPreview(false)}
+            >
+              View Full Cart
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Profile Dropdown Component with Click-to-Stay-Open functionality
+function ProfileDropdown({ userName, userRole, handleLogout }: { userName: string, userRole: string, handleLogout: () => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 rounded-full bg-accent text-primary font-medium text-sm"
+      >
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+          {userName.charAt(0).toUpperCase()}
+        </div>
+        <span className="hidden lg:inline">{userName}</span>
+        <svg
+          className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+      <div className={`absolute right-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border transition-all duration-200 z-50 ${
+        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+      }`}>
+        <Link
+          href={(() => {
+            const profile = localStorage.getItem("userProfile");
+            if (profile) {
+              try {
+                const p = JSON.parse(profile);
+                return p.role === 'admin' ? "/admin/dashboard" : "/dashboard/Student";
+              } catch {
+                return "/dashboard/Student";
+              }
+            }
+            return "/dashboard/Student";
+          })()}
+          className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary rounded-t-xl"
+          onClick={() => setIsOpen(false)}
+        >
+          Dashboard
+        </Link>
+        <Link
+          href="/dashboard/profile"
+          className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+          onClick={() => setIsOpen(false)}
+        >
+          Profile
+        </Link>
+        <Link
+          href="/my-learning"
+          className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary"
+          onClick={() => setIsOpen(false)}
+        >
+          My Courses
+        </Link>
+        <Link
+          href="/my-orders"
+          className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary"
+          onClick={() => setIsOpen(false)}
+        >
+          My Orders
+        </Link>
+        <hr className="border-orange-100" />
+        <button
+          onClick={() => {
+            handleLogout();
+            setIsOpen(false);
+          }}
+          className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 rounded-b-xl"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function NavbarContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
   const [cartItemCount, setCartItemCount] = useState(0);
+  const [showCartPreview, setShowCartPreview] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
 
   useEffect(() => {
     // Check auth status on mount
@@ -37,22 +240,28 @@ function NavbarContent() {
       }
     }
     
-    // Update cart count
-    const updateCartCount = () => {
+    // Update cart count and items
+    const updateCart = () => {
       const cart = JSON.parse(localStorage.getItem('cart') || '[]');
       setCartItemCount(cart.length);
+      setCartItems(cart);
     };
     
-    updateCartCount();
+    updateCart();
     
     // Listen for storage changes to update cart count in real-time
-    window.addEventListener('storage', updateCartCount);
+    window.addEventListener('storage', updateCart);
+    
+    // Custom event listener for cart updates in same tab
+    const handleCartUpdate = () => updateCart();
+    window.addEventListener('cartUpdated', handleCartUpdate);
     
     // Also check periodically in case same tab updates
-    const interval = setInterval(updateCartCount, 1000);
+    const interval = setInterval(updateCart, 1000);
     
     return () => {
-      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('storage', updateCart);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
       clearInterval(interval);
     };
   }, []);
@@ -94,14 +303,6 @@ function NavbarContent() {
           >
             Shop
           </Link>
-          {userRole === 'admin' && (
-            <Link
-              href="/tracking"
-              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
-            >
-              Track Order
-            </Link>
-          )}
           <div className="relative group">
             <button className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition flex items-center gap-1">
               Courses
@@ -160,17 +361,12 @@ function NavbarContent() {
 
         {/* Auth Buttons / User Menu */}
         <div className="hidden md:flex items-center gap-2 lg:gap-3">
-          <Link
-            href="/cart"
-            className="relative px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
-          >
-            🛒 Cart
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {cartItemCount}
-              </span>
-            )}
-          </Link>
+          <CartDropdown 
+            cartItemCount={cartItemCount}
+            cartItems={cartItems}
+            showCartPreview={showCartPreview}
+            setShowCartPreview={setShowCartPreview}
+          />
           <ThemeToggle />
           {isLoggedIn ? (
             <>
@@ -180,65 +376,17 @@ function NavbarContent() {
               >
                 My Learning
               </Link>
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-2 rounded-full bg-accent text-primary font-medium text-sm">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
-                    {userName.charAt(0).toUpperCase()}
-                  </div>
-                  <span className="hidden lg:inline">{userName}</span>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <Link
-                    href={(() => {
-                      const profile = localStorage.getItem("userProfile");
-                      if (profile) {
-                        try {
-                          const p = JSON.parse(profile);
-                          return p.role === 'admin' ? "/admin/dashboard" : "/dashboard/Student";
-                        } catch {
-                          return "/dashboard/Student";
-                        }
-                      }
-                      return "/dashboard/Student";
-                    })()}
-                    className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary rounded-t-xl"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/dashboard/profile"
-                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
-                  >
-                    Profile
-                  </Link>
-                  <Link
-                    href="/my-learning"
-                    className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary"
-                  >
-                    My Courses
-                  </Link>
-                  <hr className="border-orange-100" />
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-destructive/10 rounded-b-xl"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
+              <Link
+                href="/my-orders"
+                className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent transition"
+              >
+                My Orders
+              </Link>
+              <ProfileDropdown 
+                userName={userName}
+                userRole={userRole}
+                handleLogout={handleLogout}
+              />
             </>
           ) : (
             <>
@@ -319,15 +467,6 @@ function NavbarContent() {
                 </span>
               )}
             </Link>
-            {userRole === 'admin' && (
-              <Link
-                href="/tracking"
-                className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Track Order
-              </Link>
-            )}
             <Link
               href="/courses"
               className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
@@ -377,6 +516,13 @@ function NavbarContent() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   My Learning
+                </Link>
+                <Link
+                  href="/my-orders"
+                  className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  My Orders
                 </Link>
                 <Link
                   href="/dashboard/profile"

@@ -188,65 +188,85 @@ export default function ShopPage() {
     }
     localStorage.setItem('cart', JSON.stringify(cart));
     
-    // Show toast notification with cart preview
+    // Dispatch custom event to update navbar cart
+    window.dispatchEvent(new Event('cartUpdated'));
+    
+    // Show compact toast notification
     const toastDiv = document.createElement('div');
-    toastDiv.className = 'fixed top-20 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl animate-fade-in flex items-center gap-3';
+    toastDiv.className = 'fixed top-20 right-4 z-50 bg-green-500 text-white px-4 py-3 rounded-lg shadow-xl animate-fade-in flex items-center gap-2';
     toastDiv.innerHTML = `
-      <span class="text-2xl">${product.image}</span>
-      <div>
-        <p class="font-bold">${product.name}</p>
-        <p class="text-sm">Added to cart! (${cart.length} items)</p>
-      </div>
-      <a href="/cart" class="ml-4 bg-white text-green-600 px-3 py-1 rounded font-semibold hover:bg-green-50">View Cart</a>
+      <span class="text-xl">✓</span>
+      <p class="text-sm font-semibold">Added to cart!</p>
     `;
     document.body.appendChild(toastDiv);
     setTimeout(() => {
       toastDiv.remove();
-    }, 4000);
+    }, 2000);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-slate-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-orange-500 via-pink-500 to-red-500 text-white py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">9Tangle Store</h1>
-            <p className="text-xl text-white/90">Discover premium products at incredible prices</p>
+    <div className="min-h-screen bg-gradient-to-br from-white via-slate-50 to-blue-50">
+      {/* Modern Hero Section */}
+      <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-purple-900 text-white py-16 md:py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMC41IiBvcGFjaXR5PSIwLjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-xl">
+              <span className="text-3xl">🛍️</span>
+            </div>
+            <div>
+              <h1 className="text-4xl md:text-6xl font-extrabold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200">9Tangle Store</h1>
+              <p className="text-xl text-blue-200">Discover premium products at unbeatable prices</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-4 mt-8">
+            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+              <span className="text-sm font-semibold">✓ Free Shipping Over Rs. 5,000</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+              <span className="text-sm font-semibold">✓ Cash on Delivery</span>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+              <span className="text-sm font-semibold">✓ Secure Shopping</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 md:py-14">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Sidebar Filters */}
           <div className="lg:col-span-1">
             <div className="space-y-6 sticky top-24">
               {/* Search */}
-              <div>
-                <h3 className="font-bold text-lg mb-3">Search</h3>
+              <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
+                <h3 className="font-bold text-lg mb-4 text-slate-900 flex items-center gap-2">
+                  <span className="text-blue-500">🔍</span> Search
+                </h3>
                 <input
                   type="text"
                   placeholder="Search products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
                 />
               </div>
 
               {/* Categories */}
-              <div>
-                <h3 className="font-bold text-lg mb-3">Categories</h3>
+              <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
+                <h3 className="font-bold text-lg mb-4 text-slate-900 flex items-center gap-2">
+                  <span className="text-blue-500">📂</span> Categories
+                </h3>
                 <div className="space-y-2">
                   {categories.map(category => (
                     <button
                       key={category}
                       onClick={() => setSelectedCategory(category)}
-                      className={`block w-full text-left px-4 py-2 rounded-lg transition ${
+                      className={`block w-full text-left px-4 py-2.5 rounded-lg transition text-sm font-medium ${
                         selectedCategory === category
-                          ? 'bg-orange-500 text-white font-semibold'
-                          : 'text-slate-700 hover:bg-slate-100'
+                          ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-md'
+                          : 'text-slate-700 hover:bg-blue-50 border border-gray-200'
                       }`}
                     >
                       {category}
@@ -256,18 +276,41 @@ export default function ShopPage() {
               </div>
 
               {/* Sort */}
-              <div>
-                <h3 className="font-bold text-lg mb-3">Sort By</h3>
+              <div className="bg-white rounded-xl shadow-md p-5 border border-gray-200">
+                <h3 className="font-bold text-lg mb-4 text-slate-900 flex items-center gap-2">
+                  <span className="text-blue-500">⚡</span> Sort By
+                </h3>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm font-medium"
                 >
-                  <option value="latest">Latest</option>
+                  <option value="latest">Latest Products</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Top Rated</option>
                 </select>
+              </div>
+
+              {/* Info Card */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-5 border-2 border-blue-200">
+                <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <span>💡</span> Shopping Tips
+                </h4>
+                <ul className="text-xs text-slate-700 space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold">✓</span>
+                    <span>Free delivery over Rs. 5,000</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold">✓</span>
+                    <span>Secure cash on delivery</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 font-bold">✓</span>
+                    <span>Quality guaranteed</span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
@@ -275,16 +318,21 @@ export default function ShopPage() {
           {/* Products Grid */}
           <div className="lg:col-span-3">
             {/* Header with count */}
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900">
-                  {selectedCategory === 'All' ? 'All Products' : selectedCategory}
-                </h2>
-                <p className="text-slate-600">{filteredProducts.length} products found</p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-orange-500">{cartCount}</div>
-                <p className="text-sm text-slate-600">items in cart</p>
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span className="text-blue-500">🏪</span>
+                    {selectedCategory === 'All' ? 'All Products' : selectedCategory}
+                  </h2>
+                  <p className="text-slate-600 text-sm mt-1">
+                    <span className="font-semibold text-blue-600">{filteredProducts.length}</span> products available
+                  </p>
+                </div>
+                <div className="text-right bg-gradient-to-br from-orange-50 to-pink-50 px-4 py-3 rounded-lg border-2 border-orange-200">
+                  <div className="text-2xl font-bold text-orange-500">{cartCount}</div>
+                  <p className="text-xs text-slate-600 font-medium">in cart</p>
+                </div>
               </div>
             </div>
 
@@ -294,65 +342,83 @@ export default function ShopPage() {
                 {filteredProducts.map(product => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-xl shadow-sm hover:shadow-lg transition duration-300 overflow-hidden border border-gray-100 hover:border-orange-200 cursor-pointer"
+                    className="group bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-200 hover:border-blue-400 cursor-pointer transform hover:-translate-y-1"
                     onClick={() => setSelectedProduct(product)}
                   >
                     {/* Product Image */}
-                    <div className="w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center hover:scale-105 transition overflow-hidden">
-                      {product.images && product.images.length > 0 ? (
-                        product.images[0].startsWith('data:') || product.images[0].startsWith('http') ? (
-                          <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                    <div className="relative w-full h-52 bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center overflow-hidden">
+                      <div className="group-hover:scale-110 transition-transform duration-300">
+                        {product.images && product.images.length > 0 ? (
+                          product.images[0].startsWith('data:') || product.images[0].startsWith('http') ? (
+                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-7xl">{product.images[0]}</span>
+                          )
                         ) : (
-                          <span className="text-6xl">{product.images[0]}</span>
-                        )
-                      ) : (
-                        <span className="text-6xl">{product.image}</span>
+                          <span className="text-7xl">{product.image}</span>
+                        )}
+                      </div>
+                      {product.stock > 0 && product.stock < 10 && (
+                        <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          Only {product.stock} left!
+                        </div>
                       )}
                     </div>
 
                     {/* Product Info */}
-                    <div className="p-4">
-                      <h3 className="font-bold text-slate-900 mb-2 line-clamp-2">
+                    <div className="p-5">
+                      <div className="mb-3">
+                        <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                          {product.category}
+                        </span>
+                      </div>
+                      
+                      <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 text-lg group-hover:text-blue-600 transition">
                         {product.name}
                       </h3>
-                      <p className="text-sm text-slate-600 mb-3 line-clamp-2">
+                      <p className="text-sm text-slate-600 mb-3 line-clamp-2 leading-relaxed">
                         {product.description}
                       </p>
 
                       {/* Rating */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="flex text-yellow-400">
+                      <div className="flex items-center gap-2 mb-3 bg-yellow-50 px-3 py-1.5 rounded-lg border border-yellow-200">
+                        <div className="flex text-yellow-400 text-sm">
                           {'⭐'.repeat(Math.floor(product.rating))}
                         </div>
-                        <span className="text-sm text-slate-600">
-                          {product.rating} ({product.reviews} reviews)
+                        <span className="text-xs text-slate-700 font-semibold">
+                          {product.rating} ({product.reviews})
                         </span>
                       </div>
 
                       {/* Stock Info */}
-                      <div className="mb-3">
-                        <span className={`text-sm font-semibold ${
-                          product.stock > 0 ? 'text-green-600' : 'text-red-600'
+                      <div className="mb-4">
+                        <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${
+                          product.stock > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>
-                          {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                          {product.stock > 0 ? `✓ ${product.stock} In Stock` : '✕ Out of Stock'}
                         </span>
                       </div>
 
                       {/* Price and Button */}
-                      <div className="flex items-center justify-between">
-                        <div className="text-2xl font-bold text-orange-500">
-                          Rs. {product.price.toLocaleString()}
+                      <div className="pt-3 border-t border-gray-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="text-xs text-slate-500 font-medium">Price</p>
+                            <div className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+                              Rs. {product.price.toLocaleString()}
+                            </div>
+                          </div>
                         </div>
                         <button
                           onClick={(e) => handleAddToCart(product, e)}
                           disabled={product.stock === 0}
-                          className={`px-4 py-2 rounded-lg font-semibold transition ${
+                          className={`w-full px-4 py-3 rounded-lg font-bold transition-all text-sm ${
                             product.stock > 0
-                              ? 'bg-orange-500 text-white hover:bg-orange-600'
-                              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                              ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-md hover:shadow-lg'
+                              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                           }`}
                         >
-                          {product.stock > 0 ? 'Add to Cart' : 'Unavailable'}
+                          {product.stock > 0 ? '🛒 Add to Cart' : 'Unavailable'}
                         </button>
                       </div>
                     </div>
@@ -360,8 +426,12 @@ export default function ShopPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-xl text-slate-600">No products found matching your search.</p>
+              <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-4xl">🔍</span>
+                </div>
+                <p className="text-xl font-bold text-slate-900 mb-2">No products found</p>
+                <p className="text-slate-600">Try adjusting your search or filters</p>
               </div>
             )}
           </div>
