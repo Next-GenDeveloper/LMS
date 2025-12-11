@@ -132,10 +132,12 @@ export default function ProductUploadModal({
 
     // Simulate upload delay
     setTimeout(() => {
+      const filteredImages = formData.images.filter(img => img);
       const newProduct = {
         id: Date.now().toString(),
         ...formData,
-        images: formData.images.filter(img => img),
+        image: filteredImages.length > 0 ? filteredImages[0] : '📦', // Set first image as main image
+        images: filteredImages,
         specifications: formData.specifications.filter(s => s.key && s.value),
         features: formData.features.filter(f => f),
         rating: 4.5,
@@ -267,14 +269,14 @@ export default function ProductUploadModal({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-2">
-                    Regular Price ($) *
+                    Regular Price (PKR) *
                   </label>
                   <input
                     type="number"
                     value={formData.price}
                     onChange={(e) => handleInputChange('price', parseFloat(e.target.value) || 0)}
-                    placeholder="99.99"
-                    step="0.01"
+                    placeholder="9999"
+                    step="1"
                     min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -282,14 +284,14 @@ export default function ProductUploadModal({
 
                 <div>
                   <label className="block font-semibold text-slate-700 mb-2">
-                    Discount Price ($)
+                    Discount Price (PKR)
                   </label>
                   <input
                     type="number"
                     value={formData.discountPrice}
                     onChange={(e) => handleInputChange('discountPrice', parseFloat(e.target.value) || 0)}
-                    placeholder="79.99"
-                    step="0.01"
+                    placeholder="7999"
+                    step="1"
                     min="0"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -304,46 +306,84 @@ export default function ProductUploadModal({
                 {formData.images.map((image, idx) => (
                   <div
                     key={idx}
-                    onClick={() => handleImageSelect(idx)}
-                    className={`border-2 rounded-lg p-4 cursor-pointer transition ${
-                      selectedImageIndices.includes(idx)
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-300 hover:border-gray-400'
-                    }`}
+                    className="relative border-2 rounded-lg overflow-hidden transition hover:border-blue-500 bg-gray-50"
                   >
                     {image ? (
-                      <div className="text-6xl text-center">{image}</div>
+                      <div className="relative aspect-square">
+                        <img 
+                          src={image} 
+                          alt={`Product ${idx + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          onClick={() => handleImageChange(idx, '')}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     ) : (
-                      <div className="text-4xl text-gray-400 text-center">📷</div>
+                      <label className="aspect-square flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              // Check file size
+                              if (file.size > 2 * 1024 * 1024) {
+                                alert('Image size should be less than 2MB. Please use a smaller image.');
+                                return;
+                              }
+                              
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const img = new Image();
+                                img.onload = () => {
+                                  // Create canvas to resize image
+                                  const canvas = document.createElement('canvas');
+                                  const ctx = canvas.getContext('2d');
+                                  
+                                  // Resize to max 800x800 while maintaining aspect ratio
+                                  let width = img.width;
+                                  let height = img.height;
+                                  const maxSize = 800;
+                                  
+                                  if (width > height && width > maxSize) {
+                                    height = (height * maxSize) / width;
+                                    width = maxSize;
+                                  } else if (height > maxSize) {
+                                    width = (width * maxSize) / height;
+                                    height = maxSize;
+                                  }
+                                  
+                                  canvas.width = width;
+                                  canvas.height = height;
+                                  ctx?.drawImage(img, 0, 0, width, height);
+                                  
+                                  // Convert to compressed JPEG
+                                  const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+                                  handleImageChange(idx, compressedImage);
+                                };
+                                img.src = reader.result as string;
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <div className="text-4xl text-gray-400 mb-2">📷</div>
+                        <p className="text-xs text-gray-600 font-semibold">Upload Image</p>
+                        <p className="text-xs text-gray-500 mt-1">Max 2MB</p>
+                      </label>
                     )}
-                    <p className="text-xs text-gray-600 text-center mt-2">Image {idx + 1}</p>
+                    <p className="text-xs text-gray-600 text-center py-2 bg-white">Image {idx + 1}</p>
                   </div>
                 ))}
               </div>
-
-              {selectedImageIndices.length > 0 && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="font-semibold text-blue-900 mb-3">
-                    Select icon for {selectedImageIndices.length} selected image(s)
-                  </p>
-                  <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
-                    {EMOJI_ICONS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        onClick={() => {
-                          selectedImageIndices.forEach(idx => {
-                            handleImageChange(idx, emoji);
-                          });
-                          setSelectedImageIndices([]);
-                        }}
-                        className="text-3xl p-2 border border-gray-300 rounded-lg hover:bg-white hover:border-blue-500 transition"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <p className="text-sm text-gray-600 mb-4">
+                💡 Click on any image slot to upload. Supported formats: JPG, PNG, GIF, WebP
+              </p>
             </section>
 
             {/* Specifications */}

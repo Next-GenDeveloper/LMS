@@ -12,6 +12,7 @@ export default function AdminSidebar() {
     { label: 'Dashboard', href: '/admin', icon: '📊' },
     { label: 'Products', href: '/admin/products', icon: '📦' },
     { label: 'Orders', href: '/admin/orders', icon: '🛒' },
+    { label: 'Announcements', href: '/admin/announcements', icon: '📢' },
     { label: 'Analytics', href: '/admin/analytics', icon: '📈' },
     { label: 'Settings', href: '/admin/settings', icon: '⚙️' },
   ];

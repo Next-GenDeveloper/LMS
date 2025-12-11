@@ -130,8 +130,9 @@ export default function ShopPage() {
     if (stored) {
       try {
         const uploadedProducts = JSON.parse(stored);
-        setProducts(prev => [...uploadedProducts, ...DEMO_PRODUCTS]);
-        setFilteredProducts(prev => [...uploadedProducts, ...DEMO_PRODUCTS]);
+        const allProducts = [...uploadedProducts, ...DEMO_PRODUCTS];
+        setProducts(allProducts);
+        setFilteredProducts(allProducts);
       } catch (e) {
         console.error('Failed to load uploaded products');
       }
@@ -172,7 +173,10 @@ export default function ShopPage() {
     setFilteredProducts(filtered);
   }, [searchQuery, selectedCategory, sortBy, products]);
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (product: Product, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setCartCount(prev => prev + 1);
     // Store in localStorage for cart
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -183,6 +187,22 @@ export default function ShopPage() {
       cart.push({ ...product, quantity: 1 });
     }
     localStorage.setItem('cart', JSON.stringify(cart));
+    
+    // Show toast notification with cart preview
+    const toastDiv = document.createElement('div');
+    toastDiv.className = 'fixed top-20 right-4 z-50 bg-green-500 text-white px-6 py-4 rounded-lg shadow-xl animate-fade-in flex items-center gap-3';
+    toastDiv.innerHTML = `
+      <span class="text-2xl">${product.image}</span>
+      <div>
+        <p class="font-bold">${product.name}</p>
+        <p class="text-sm">Added to cart! (${cart.length} items)</p>
+      </div>
+      <a href="/cart" class="ml-4 bg-white text-green-600 px-3 py-1 rounded font-semibold hover:bg-green-50">View Cart</a>
+    `;
+    document.body.appendChild(toastDiv);
+    setTimeout(() => {
+      toastDiv.remove();
+    }, 4000);
   };
 
   return (
@@ -278,8 +298,16 @@ export default function ShopPage() {
                     onClick={() => setSelectedProduct(product)}
                   >
                     {/* Product Image */}
-                    <div className="w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-6xl hover:scale-105 transition">
-                      {product.image}
+                    <div className="w-full h-48 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center hover:scale-105 transition overflow-hidden">
+                      {product.images && product.images.length > 0 ? (
+                        product.images[0].startsWith('data:') || product.images[0].startsWith('http') ? (
+                          <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-6xl">{product.images[0]}</span>
+                        )
+                      ) : (
+                        <span className="text-6xl">{product.image}</span>
+                      )}
                     </div>
 
                     {/* Product Info */}
@@ -313,10 +341,10 @@ export default function ShopPage() {
                       {/* Price and Button */}
                       <div className="flex items-center justify-between">
                         <div className="text-2xl font-bold text-orange-500">
-                          ${product.price.toFixed(2)}
+                          Rs. {product.price.toLocaleString()}
                         </div>
                         <button
-                          onClick={() => handleAddToCart(product)}
+                          onClick={(e) => handleAddToCart(product, e)}
                           disabled={product.stock === 0}
                           className={`px-4 py-2 rounded-lg font-semibold transition ${
                             product.stock > 0
@@ -359,16 +387,24 @@ export default function ShopPage() {
                     {selectedProduct.images.map((img, idx) => (
                       <div
                         key={idx}
-                        className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center text-5xl border-2 border-gray-200 hover:border-blue-500 transition"
+                        className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 rounded-lg flex items-center justify-center border-2 border-gray-200 hover:border-blue-500 transition overflow-hidden"
                       >
-                        {img}
+                        {img.startsWith('data:') || img.startsWith('http') ? (
+                          <img src={img} alt={`Product ${idx + 1}`} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-5xl">{img}</span>
+                        )}
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center text-8xl">
-                  {selectedProduct.image}
+                <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl flex items-center justify-center overflow-hidden">
+                  {selectedProduct.image?.startsWith('data:') || selectedProduct.image?.startsWith('http') ? (
+                    <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-8xl">{selectedProduct.image}</span>
+                  )}
                 </div>
               )}
 
@@ -399,11 +435,11 @@ export default function ShopPage() {
                     <>
                       <div className="flex items-center gap-3">
                         <p className="text-gray-600 text-sm">Regular Price:</p>
-                        <p className="text-2xl font-bold line-through text-gray-500">${selectedProduct.discountPrice.toFixed(2)}</p>
+                        <p className="text-2xl font-bold line-through text-gray-500">Rs. {selectedProduct.discountPrice.toLocaleString()}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <p className="text-gray-600 text-sm font-semibold">Sale Price:</p>
-                        <p className="text-3xl font-bold text-green-600">${selectedProduct.price.toFixed(2)}</p>
+                        <p className="text-3xl font-bold text-green-600">Rs. {selectedProduct.price.toLocaleString()}</p>
                         <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
                           {Math.round(((selectedProduct.discountPrice - selectedProduct.price) / selectedProduct.discountPrice) * 100)}% OFF
                         </span>
@@ -412,7 +448,7 @@ export default function ShopPage() {
                   ) : (
                     <div>
                       <p className="text-gray-600 text-sm font-semibold mb-2">Price</p>
-                      <p className="text-3xl font-bold text-orange-500">${selectedProduct.price.toFixed(2)}</p>
+                      <p className="text-3xl font-bold text-orange-500">Rs. {selectedProduct.price.toLocaleString()}</p>
                     </div>
                   )}
                 </div>
@@ -501,10 +537,10 @@ export default function ShopPage() {
                   {selectedProduct.stock > 0 ? '🛒 Add to Cart' : 'Out of Stock'}
                 </button>
                 <Link
-                  href="/cart"
+                  href="/checkout"
                   className="flex-1 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition text-center"
                 >
-                  🛍️ View Cart
+                  🛍️ Checkout
                 </Link>
               </div>
             </div>

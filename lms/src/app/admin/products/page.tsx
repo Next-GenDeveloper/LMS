@@ -292,14 +292,14 @@ export default function AdminPanel() {
 
                 {/* Price */}
                 <div>
-                  <label className="block font-semibold mb-2 text-slate-700">Price ($)*</label>
+                  <label className="block font-semibold mb-2 text-slate-700">Price (PKR)*</label>
                   <input
                     type="number"
                     name="price"
                     value={formData.price || 0}
                     onChange={handleInputChange}
-                    placeholder="0.00"
-                    step="0.01"
+                    placeholder="0"
+                    step="1"
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   />
                 </div>
@@ -407,7 +407,7 @@ export default function AdminPanel() {
                     <tr key={product.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
                       <td className="px-6 py-4 text-2xl">{product.image}</td>
                       <td className="px-6 py-4 font-medium text-slate-900">{product.name}</td>
-                      <td className="px-6 py-4 text-orange-500 font-semibold">${product.price.toFixed(2)}</td>
+                      <td className="px-6 py-4 text-orange-500 font-semibold">Rs. {product.price.toLocaleString()}</td>
                       <td className="px-6 py-4 text-slate-600">{product.category}</td>
                       <td className="px-6 py-4">
                         <span className={`px-3 py-1 rounded-full text-sm font-semibold ${

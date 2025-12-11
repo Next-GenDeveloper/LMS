@@ -11,6 +11,7 @@ const navigation = [
   { name: "Users", href: "/admin/users", icon: "👥" },
   { name: "Enrollments", href: "/admin/enrollments", icon: "💳" },
   { name: "Announcements", href: "/admin/announcements", icon: "📢" },
+  { name: "Product Upload", href: "/admin/product-upload", icon: "📤" },
   { name: "Settings", href: "/admin/settings", icon: "⚙️" },
 ];
 

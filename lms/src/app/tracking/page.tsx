@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface OrderItem {
   id: string;
@@ -55,6 +56,9 @@ const getStatusIcon = (status: string) => {
 };
 
 export default function OrderTracking() {
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [orders] = useState<Order[]>([
     {
       id: 'ORD-001',
@@ -96,6 +100,34 @@ export default function OrderTracking() {
   ]);
 
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  useEffect(() => {
+    // Check if user is logged in and is admin
+    const token = localStorage.getItem("authToken");
+    const profile = localStorage.getItem("userProfile");
+
+    if (!token || !profile) {
+      // Not logged in, redirect to login
+      router.replace('/auth/login');
+      return;
+    }
+
+    try {
+      const userProfile = JSON.parse(profile);
+      if (userProfile.role !== 'admin') {
+        // Not admin, redirect to home
+        router.replace('/');
+        return;
+      }
+      setIsAdmin(true);
+    } catch (error) {
+      console.error("Error parsing user profile:", error);
+      router.replace('/auth/login');
+      return;
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
   const getProgressPercentage = (status: string) => {
     const index = statusSteps.indexOf(status);

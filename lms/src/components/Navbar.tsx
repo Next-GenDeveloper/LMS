@@ -14,6 +14,7 @@ function NavbarContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [cartItemCount, setCartItemCount] = useState(0);
 
   useEffect(() => {
     // Check auth status on mount
@@ -35,6 +36,25 @@ function NavbarContent() {
         }
       }
     }
+    
+    // Update cart count
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartItemCount(cart.length);
+    };
+    
+    updateCartCount();
+    
+    // Listen for storage changes to update cart count in real-time
+    window.addEventListener('storage', updateCartCount);
+    
+    // Also check periodically in case same tab updates
+    const interval = setInterval(updateCartCount, 1000);
+    
+    return () => {
+      window.removeEventListener('storage', updateCartCount);
+      clearInterval(interval);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -74,18 +94,62 @@ function NavbarContent() {
           >
             Shop
           </Link>
-          <Link
-            href="/tracking"
-            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
-          >
-            Track Order
-          </Link>
-          <Link
-            href="/courses"
-            className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
-          >
-            Courses
-          </Link>
+          {userRole === 'admin' && (
+            <Link
+              href="/tracking"
+              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
+            >
+              Track Order
+            </Link>
+          )}
+          <div className="relative group">
+            <button className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition flex items-center gap-1">
+              Courses
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <div className="absolute left-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+              <Link
+                href="/courses"
+                className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary rounded-t-xl"
+              >
+                All Courses
+              </Link>
+              <Link
+                href="/my-learning"
+                className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+              >
+                My Learning
+              </Link>
+              {userRole === 'admin' && (
+                <>
+                  <Link
+                    href="/admin/courses"
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+                  >
+                    Manage Courses
+                  </Link>
+                  <Link
+                    href="/admin/courses/create"
+                    className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500 rounded-b-xl"
+                  >
+                    Create Course
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
           <Link
             href="/contact"
             className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent transition"
@@ -101,6 +165,11 @@ function NavbarContent() {
             className="relative px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition"
           >
             🛒 Cart
+            {cartItemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {cartItemCount}
+              </span>
+            )}
           </Link>
           <ThemeToggle />
           {isLoggedIn ? (
@@ -240,25 +309,50 @@ function NavbarContent() {
             </Link>
             <Link
               href="/cart"
-              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition relative"
               onClick={() => setIsMenuOpen(false)}
             >
               🛒 Cart
+              {cartItemCount > 0 && (
+                <span className="inline-block ml-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 text-center leading-5">
+                  {cartItemCount}
+                </span>
+              )}
             </Link>
-            <Link
-              href="/tracking"
-              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Track Order
-            </Link>
+            {userRole === 'admin' && (
+              <Link
+                href="/tracking"
+                className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Track Order
+              </Link>
+            )}
             <Link
               href="/courses"
               className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
               onClick={() => setIsMenuOpen(false)}
             >
-              Courses
+              All Courses
             </Link>
+            {userRole === 'admin' && (
+              <>
+                <Link
+                  href="/admin/courses"
+                  className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Manage Courses
+                </Link>
+                <Link
+                  href="/admin/courses/create"
+                  className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Create Course
+                </Link>
+              </>
+            )}
             <Link
               href="/contact"
               className="block py-2.5 px-3 rounded-lg text-sm font-medium text-slate-700 hover:bg-orange-50 hover:text-orange-500 transition"
