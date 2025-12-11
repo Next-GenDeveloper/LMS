@@ -1,18 +1,19 @@
 import express from 'express';
-import { requireAuth } from '../middleware/auth';
-import { ChatMessage } from '../models/ChatMessage';
+import { requireAuth } from '../middleware/auth.js';
+import { ChatMessage } from '../models/ChatMessage.js';
 
 const router = express.Router();
 
 // Create a new chat message
-router.post('/courses/:courseId/messages', requireAuth, async (req, res) => {
+router.post('/courses/:courseId/messages', requireAuth, async (req, res): Promise<void> => {
   try {
     const { courseId } = req.params;
     const { content } = req.body;
     const userId = (req as any).user?.userId;
 
     if (!content) {
-      return res.status(400).json({ error: 'Message content is required' });
+      res.status(400).json({ error: 'Message content is required' });
+      return;
     }
 
     const message = new ChatMessage({
@@ -31,7 +32,7 @@ router.post('/courses/:courseId/messages', requireAuth, async (req, res) => {
 });
 
 // Get messages for a course
-router.get('/courses/:courseId/messages', requireAuth, async (req, res) => {
+router.get('/courses/:courseId/messages', requireAuth, async (req, res): Promise<void> => {
   try {
     const { courseId } = req.params;
 

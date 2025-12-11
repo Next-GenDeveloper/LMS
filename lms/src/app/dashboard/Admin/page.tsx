@@ -605,3 +605,6 @@ export default function AdminDashboardPage() {
         onClose={() => setIsUploadModalOpen(false)}
         onProductAdded={handleProductAdded}
       />
+    </div>
+  );
+}

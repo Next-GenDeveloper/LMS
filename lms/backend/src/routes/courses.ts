@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from '../middleware/auth.ts';
 const router = Router();
 
 // List courses
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   try {
     const courses = await Course.find({}).sort({ createdAt: -1 }).limit(200);
     res.json(courses.map((c) => ({
@@ -22,7 +22,7 @@ router.get('/', async (_req: Request, res: Response) => {
   } catch (e: any) {
     // Return a mock dataset so the UI remains usable, regardless of env
     console.warn('Course list failed, returning mock data:', e?.message || e);
-    return res.json([
+    res.json([
       {
         id: 'demo-1',
         title: 'Intro to React',
@@ -61,11 +61,14 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 // Get one course
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id;
     const c = await Course.findById(id);
-    if (!c) return res.status(404).json({ message: 'Course not found' });
+    if (!c) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
     res.json({
       id: c._id,
       title: c.title,
@@ -103,11 +106,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 });
 
 // Get course details with full information (for course page)
-router.get('/:id/details', async (req: Request, res: Response) => {
+router.get('/:id/details', async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id;
     const c = await Course.findById(id);
-    if (!c) return res.status(404).json({ message: 'Course not found' });
+    if (!c) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
 
     // Calculate total lessons and duration
     let totalLessons = 0;
@@ -170,11 +176,13 @@ router.get('/:id/details', async (req: Request, res: Response) => {
 });
 
 // Create course (admin only)
-router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const { title, description, price, bannerImage, pdfFiles, videoFiles, category, level, duration, language, tags } = req.body || {};
-    if (!title || !description) return res.status(400).json({ message: 'title and description are required' });
-    const instructor = (req as any).user?.userId;
+    if (!title || !description) {
+      res.status(400).json({ message: 'title and description are required' });
+      return;
+    }
     const course = await Course.create({
       title,
       description,
@@ -196,12 +204,15 @@ router.post('/', requireAuth, requireRole('admin'), async (req: Request, res: Re
 });
 
 // Update course (admin only)
-router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id;
     const payload = req.body || {};
     const updated = await Course.findByIdAndUpdate(id, payload, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Course not found' });
+    if (!updated) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
     res.json({ id: updated._id });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to update course' });
@@ -209,11 +220,14 @@ router.put('/:id', requireAuth, requireRole('admin'), async (req: Request, res: 
 });
 
 // Delete course (admin only)
-router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
+router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, res: Response): Promise<void> => {
   try {
     const id = req.params.id;
     const deleted = await Course.findByIdAndDelete(id);
-    if (!deleted) return res.status(404).json({ message: 'Course not found' });
+    if (!deleted) {
+      res.status(404).json({ message: 'Course not found' });
+      return;
+    }
     res.json({ success: true });
   } catch (e: any) {
     res.status(500).json({ message: e.message || 'Failed to delete course' });

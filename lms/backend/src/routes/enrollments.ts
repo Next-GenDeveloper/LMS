@@ -29,15 +29,16 @@ router.get('/check/:courseId', requireAuth, async (req: Request, res: Response) 
 });
 
 // Create enrollment with payment (simplified payment processing)
-router.post('/', requireAuth, async (req: Request, res: Response) => {
+router.post('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { courseId, paymentMethod = 'credit_card' } = req.body;
+    const { courseId } = req.body;
     const userId = (req as any).user?.userId;
 
     // Check if course exists
     const course = await Course.findById(courseId);
     if (!course) {
-      return res.status(404).json({ message: 'Course not found' });
+      res.status(404).json({ message: 'Course not found' });
+      return;
     }
 
     // Check if user is already enrolled
@@ -48,7 +49,8 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
 
     if (existingEnrollment) {
       if (existingEnrollment.paymentStatus === 'completed') {
-        return res.status(400).json({ message: 'Already enrolled in this course' });
+        res.status(400).json({ message: 'Already enrolled in this course' });
+        return;
       } else {
         // Update existing enrollment
         existingEnrollment.paymentStatus = 'completed';
@@ -60,11 +62,12 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
         course.enrollmentCount += 1;
         await course.save();
 
-        return res.json({
+        res.json({
           success: true,
           enrollmentId: existingEnrollment._id,
           message: 'Enrollment updated successfully'
         });
+        return;
       }
     }
 
@@ -97,7 +100,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
 });
 
 // Get user enrollments
-router.get('/', requireAuth, async (req: Request, res: Response) => {
+router.get('/', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).user?.userId;
 
@@ -108,12 +111,12 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
     res.json(enrollments.map(e => ({
       id: e._id,
       course: {
-        id: e.course._id,
-        title: e.course.title,
-        description: e.course.description,
-        bannerImage: e.course.bannerImage,
-        price: e.course.price,
-        category: e.course.category
+        id: (e.course as any)._id,
+        title: (e.course as any).title,
+        description: (e.course as any).description,
+        bannerImage: (e.course as any).bannerImage,
+        price: (e.course as any).price,
+        category: (e.course as any).category
       },
       status: e.status,
       paymentStatus: e.paymentStatus,
@@ -126,7 +129,7 @@ router.get('/', requireAuth, async (req: Request, res: Response) => {
 });
 
 // Get enrollment by ID
-router.get('/:id', requireAuth, async (req: Request, res: Response) => {
+router.get('/:id', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const enrollmentId = req.params.id;
     const userId = (req as any).user?.userId;
@@ -137,18 +140,19 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
     }).populate('course', 'title description bannerImage price category');
 
     if (!enrollment) {
-      return res.status(404).json({ message: 'Enrollment not found' });
+      res.status(404).json({ message: 'Enrollment not found' });
+      return;
     }
 
     res.json({
       id: enrollment._id,
       course: {
-        id: enrollment.course._id,
-        title: enrollment.course.title,
-        description: enrollment.course.description,
-        bannerImage: enrollment.course.bannerImage,
-        price: enrollment.course.price,
-        category: enrollment.course.category
+        id: (enrollment.course as any)._id,
+        title: (enrollment.course as any).title,
+        description: (enrollment.course as any).description,
+        bannerImage: (enrollment.course as any).bannerImage,
+        price: (enrollment.course as any).price,
+        category: (enrollment.course as any).category
       },
       status: enrollment.status,
       paymentStatus: enrollment.paymentStatus,
@@ -161,7 +165,7 @@ router.get('/:id', requireAuth, async (req: Request, res: Response) => {
 });
 
 // Update enrollment progress
-router.put('/:id/progress', requireAuth, async (req: Request, res: Response) => {
+router.put('/:id/progress', requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const enrollmentId = req.params.id;
     const { progress } = req.body;
@@ -177,7 +181,8 @@ router.put('/:id/progress', requireAuth, async (req: Request, res: Response) => 
     );
 
     if (!enrollment) {
-      return res.status(404).json({ message: 'Enrollment not found' });
+      res.status(404).json({ message: 'Enrollment not found' });
+      return;
     }
 
     res.json({
@@ -201,9 +206,9 @@ router.get('/course/:courseId', requireAuth, async (req: Request, res: Response)
     res.json(enrollments.map(e => ({
       id: e._id,
       student: {
-        id: e.student._id,
-        name: e.student.name,
-        email: e.student.email
+        id: (e.student as any)._id,
+        name: (e.student as any).name,
+        email: (e.student as any).email
       },
       status: e.status,
       paymentStatus: e.paymentStatus,

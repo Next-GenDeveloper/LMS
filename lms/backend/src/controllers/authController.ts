@@ -12,7 +12,7 @@ export const registerUser = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, fullName, role } = req.body;
+    const { email, password, fullName } = req.body;
     const [firstName, ...rest] = (fullName || '').split(' ');
     const lastName = rest.join(' ') || '';
     
@@ -48,7 +48,7 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password, isAdmin } = req.body;
+    const { email, password } = req.body;
 
     // Hardcoded Super Admin credentials
     const ADMIN_EMAIL = 'admin@9tangle.com';

@@ -9,15 +9,18 @@ import { userProfileValidation, changePasswordValidation, validate } from '../ut
 const router = Router();
 
 // Get current user profile
-router.get('/me', requireAuth, async (req: Request, res: Response) => {
+router.get('/me', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const uid = (req as any).user?.userId;
   const u = await User.findById(uid).select('_id email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
-  if (!u) return res.status(404).json({ message: 'User not found' });
+  if (!u) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
   res.json(u);
 });
 
 // Update current user profile
-router.put('/me', requireAuth, validate(userProfileValidation), async (req: Request, res: Response) => {
+router.put('/me', requireAuth, validate(userProfileValidation), async (req: Request, res: Response): Promise<void> => {
   const uid = (req as any).user?.userId;
   const { firstName, lastName, bio, profilePicture, phone, email, preferences } = req.body || {};
   const update: any = { firstName, lastName, bio, profilePicture, phone, preferences };
@@ -27,7 +30,10 @@ router.put('/me', requireAuth, validate(userProfileValidation), async (req: Requ
     update,
     { new: true, runValidators: true }
   ).select('email firstName lastName bio profilePicture phone preferences role createdAt updatedAt');
-  if (!updated) return res.status(404).json({ message: 'User not found' });
+  if (!updated) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
   res.json(updated);
 });
 
@@ -35,20 +41,29 @@ router.put('/me', requireAuth, validate(userProfileValidation), async (req: Requ
 router.put('/me/password', requireAuth, validate(changePasswordValidation), async (req: Request, res: Response) => {
   const uid = (req as any).user?.userId;
   const { currentPassword, newPassword } = req.body || {};
-  if (!newPassword) return res.status(400).json({ message: 'newPassword is required' });
+  if (!newPassword) {
+    res.status(400).json({ message: 'newPassword is required' });
+    return;
+  }
   const u = await User.findById(uid).select('password');
-  if (!u) return res.status(404).json({ message: 'User not found' });
+  if (!u) {
+    res.status(404).json({ message: 'User not found' });
+    return;
+  }
   try {
     const { comparePassword, hashPassword } = await import('../utils/Passwordhash.ts');
     if (currentPassword) {
       const ok = await comparePassword(currentPassword, (u as any).password);
-      if (!ok) return res.status(400).json({ message: 'Current password is incorrect' });
+      if (!ok) {
+        res.status(400).json({ message: 'Current password is incorrect' });
+        return;
+      }
     }
     const hashed = await hashPassword(newPassword);
     await User.findByIdAndUpdate(uid, { password: hashed });
-    return res.json({ ok: true });
+    res.json({ ok: true });
   } catch (e: any) {
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -59,11 +74,11 @@ router.get('/', requireAuth, requireRole('admin'), async (_req: Request, res: Re
 });
 
 // Admin or self: get a user's course-related details (enrollments)
-router.get('/:id/enrollments', requireAuth, async (req: Request, res: Response) => {
+router.get('/:id/enrollments', requireAuth, async (req: Request, res: Response): Promise<void> => {
   const requester = (req as any).user as { userId: string; role: string };
   const { id } = req.params;
   if (requester.userId !== id && requester.role !== 'admin') {
-    return res.status(403).json({ message: 'Forbidden' });
+    res.status(403).json({ message: 'Forbidden' });
   }
   const enrollments = await Enrollment.find({ student: id })
     .populate({ path: 'course', model: Course, select: 'title price category thumbnail' })

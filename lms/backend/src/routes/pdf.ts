@@ -6,25 +6,27 @@ import { pdfSecurity, adminPdfAccess } from '../middleware/pdfSecurity.ts';
 const router = Router();
 
 // Serve PDF files with security middleware
-router.get('/secure/:filename', pdfSecurity, (req, res) => {
+router.get('/secure/:filename', pdfSecurity, (req, res): void => {
   try {
     const filename = req.params.filename;
     const filePath = path.join(__dirname, '../../uploads', filename);
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
+      res.status(404).json({
         error: 'Not Found',
         message: 'PDF file not found'
       });
+      return;
     }
 
     // Check if the file is actually a PDF
     if (!filename.toLowerCase().endsWith('.pdf')) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: 'Only PDF files can be accessed through this endpoint'
       });
+      return;
     }
 
     // Set appropriate headers for PDF
@@ -53,7 +55,7 @@ router.get('/secure/:filename', pdfSecurity, (req, res) => {
 });
 
 // Admin endpoint to manage PDF access permissions
-router.post('/:courseId/permissions', adminPdfAccess, async (req, res) => {
+router.post('/:courseId/permissions', adminPdfAccess, async (req, res): Promise<void> => {
   try {
     const courseId = req.params.courseId;
     const { userId, action } = req.body; // action: 'grant' or 'revoke'
@@ -62,10 +64,11 @@ router.post('/:courseId/permissions', adminPdfAccess, async (req, res) => {
     // For this example, we'll just return success
 
     if (!['grant', 'revoke'].includes(action)) {
-      return res.status(400).json({
+      res.status(400).json({
         error: 'Bad Request',
         message: "Action must be either 'grant' or 'revoke'"
       });
+      return;
     }
 
     // TODO: Implement actual permission management logic
