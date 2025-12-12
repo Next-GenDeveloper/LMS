@@ -117,6 +117,11 @@ export default function CourseDetailPage({
       return;
     }
 
+    if (!course) {
+      alert("Course not found");
+      return;
+    }
+
     try {
       // First check if user is already enrolled
       const checkResponse = await fetch(`${API_BASE}/api/enrollments/check/${id}`, {
