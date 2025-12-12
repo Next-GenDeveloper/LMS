@@ -2,6 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import CourseCard, { Course } from "@/components/CourseCard";
 import { getCourses, type ApiCourse } from "@/actions/getCourses";
+import Image from "next/image";
+import Link from "next/link";
 
 type SortKey = "newest" | "price-asc" | "price-desc" | "title";
 
@@ -54,54 +56,67 @@ export default function CoursesPage() {
   }, [courses]);
 
   return (
-    <div className="min-h-screen bg-[#ffe9d6] bg-[radial-gradient(circle_at_top_left,#ffd1a1,transparent_55%),radial-gradient(circle_at_bottom_right,#ffb46b,transparent_60%)]">
-      {/* Hero */}
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
+      {/* Hero Section with Banner */}
       <section className="relative overflow-hidden">
-        <div className="container mx-auto px-4 pt-10 pb-6 md:pt-12 md:pb-8">
-          <div className="max-w-3xl">
-            <p className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-500">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
-                9T
-              </span>
-              Course catalog
-            </p>
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-3 text-slate-900 animate-fade-in-up">
-              Explore our{" "}
-              <span className="relative inline-block text-orange-500">
-                latest courses
-                <span className="absolute left-0 -bottom-1 h-1 w-full rounded-full bg-orange-400" />
-              </span>
-            </h1>
-            <p className="text-sm md:text-base text-slate-600 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-              Learn in‑demand skills from industry experts. Filter by category, sort by price or recency,
-              and find the perfect path for your next step.
-            </p>
-            <div className="flex flex-wrap gap-3 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
-                Top courses
-              </span>
-              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
-                Certificates
-              </span>
-              <span className="rounded-full bg-white/80 px-4 py-2 text-xs font-semibold border border-orange-100 text-slate-700">
-                Lifetime access
-              </span>
+        <div className="container mx-auto px-4 pt-16 pb-12">
+          <div className="grid lg:grid-cols-2 gap-8 items-center">
+            <div className="max-w-2xl">
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-1 text-sm font-semibold uppercase tracking-[0.18em] text-orange-500 backdrop-blur-sm">
+                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs text-white">
+                  9T
+                </span>
+                Explore Our Courses
+              </p>
+              <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6 text-slate-900 animate-fade-in-up">
+                <span className="relative inline-block text-orange-500">
+                  Learn & Grow
+                  <span className="absolute left-0 -bottom-2 h-1.5 w-full rounded-full bg-orange-400" />
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-slate-700 mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                Discover our comprehensive courses designed to help you master new skills and advance your career. From beginner to advanced levels, we have something for everyone.
+              </p>
+              <div className="flex flex-wrap gap-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                <Link 
+                  href="/courses"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold hover:from-orange-600 hover:to-pink-600 transition shadow-lg"
+                >
+                  Browse All Courses
+                </Link>
+                <Link 
+                  href="/my-learning"
+                  className="px-6 py-3 rounded-xl border-2 border-orange-200 text-orange-600 font-semibold hover:bg-orange-50 transition"
+                >
+                  My Learning
+                </Link>
+              </div>
+            </div>
+            <div className="relative h-64 lg:h-96 rounded-2xl overflow-hidden shadow-2xl">
+              <Image
+                src="/next.svg"
+                alt="Online Learning"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-pink-500/20" />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="container mx-auto px-4 pb-10 md:pb-12">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 pb-16">
         {/* Search and Filter Section */}
-        <div className="mb-8 animate-fade-in-up">
-          <div className="bg-white/95 rounded-3xl border border-orange-100 p-6 shadow-lg backdrop-blur">
+        <div className="mb-12 animate-fade-in-up">
+          <div className="bg-white/95 rounded-3xl border border-orange-100 p-6 shadow-lg backdrop-blur-sm">
             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-1">Browse catalog</h2>
-                <p className="text-slate-500 text-sm">Search, filter, and sort to find the perfect course.</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-1">Find Your Perfect Course</h2>
+                <p className="text-slate-500">Search, filter, and sort to discover the ideal learning experience.</p>
               </div>
             </div>
-            
+
             {/* Search Bar */}
             <div className="relative mb-6">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
@@ -118,8 +133,8 @@ export default function CoursesPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-2">Category</label>
                 <select 
                   value={category} 
@@ -131,7 +146,7 @@ export default function CoursesPage() {
                   ))}
                 </select>
               </div>
-              <div className="flex-1">
+              <div>
                 <label className="block text-sm font-semibold text-slate-800 mb-2">Sort By</label>
                 <select 
                   value={sort} 
@@ -144,12 +159,30 @@ export default function CoursesPage() {
                   <option value="title">Title A-Z</option>
                 </select>
               </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Price Range</label>
+                <select 
+                  className="w-full h-12 rounded-xl border-2 border-orange-100 px-4 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                  disabled
+                >
+                  <option>All Prices</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-800 mb-2">Level</label>
+                <select 
+                  className="w-full h-12 rounded-xl border-2 border-orange-100 px-4 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-white text-slate-900 transition-all"
+                  disabled
+                >
+                  <option>All Levels</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Category chips */}
-        <div className="mb-8 flex flex-wrap gap-3 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <div className="mb-12 flex flex-wrap gap-3 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           {categories.filter(c => c !== 'all').map((c) => (
             <button
               key={c}
@@ -177,74 +210,136 @@ export default function CoursesPage() {
           )}
         </div>
 
-        {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="animate-pulse rounded-3xl border border-orange-100 overflow-hidden bg-white/90">
-                <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 bg-orange-100 rounded w-2/3" />
-                  <div className="h-4 bg-orange-50 rounded w-full" />
-                  <div className="h-4 bg-orange-50 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        {error && !loading && (
-          <div className="py-12 animate-fade-in-up">
-            <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-6 text-center">
-              <div className="text-red-600 font-semibold text-lg mb-2">Oops! Something went wrong</div>
-              <div className="text-red-600">{error}</div>
+        {/* Featured Courses Section */}
+        <section className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">Featured Courses</h2>
+              <p className="text-slate-600">Handpicked courses for your learning journey</p>
             </div>
+            <Link href="/courses" className="text-orange-500 font-semibold hover:text-orange-600 transition">
+              View All →
+            </Link>
           </div>
-        )}
 
-        {!loading && !error && (
-          <>
-            {filtered.length > 0 ? (
-              <div className="mb-4 text-sm text-slate-600">
-                Showing <span className="font-semibold text-orange-500">{filtered.length}</span> course{filtered.length !== 1 ? 's' : ''}
-              </div>
-            ) : null}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((c, idx) => (
-                <div key={c.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
-                  <CourseCard course={{ 
-                    id: c.id, 
-                    title: c.title, 
-                    description: c.description, 
-                    price: c.price, 
-                    thumbnail: c.thumbnail,
-                    bannerImage: c.bannerImage,
-                    level: c.level,
-                    rating: c.rating,
-                    reviews: c.reviews,
-                    enrollmentCount: c.enrollmentCount
-                  }} />
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {loading && (
+              <>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="animate-pulse rounded-3xl border border-orange-100 overflow-hidden bg-white/90">
+                    <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-5 bg-orange-100 rounded w-2/3" />
+                      <div className="h-4 bg-orange-50 rounded w-full" />
+                      <div className="h-4 bg-orange-50 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {error && !loading && (
+              <div className="col-span-full py-12 animate-fade-in-up">
+                <div className="rounded-3xl border-2 border-red-200 bg-red-50 p-6 text-center">
+                  <div className="text-red-600 font-semibold text-lg mb-2">Oops! Something went wrong</div>
+                  <div className="text-red-600">{error}</div>
                 </div>
-              ))}
-            </div>
-            {filtered.length === 0 && (
-              <div className="col-span-full py-20 text-center animate-fade-in-up">
-                <div className="text-6xl mb-4">🔍</div>
-                <div className="text-2xl font-bold text-slate-900 mb-2">No courses found</div>
-                <div className="text-slate-600 mb-6">Try adjusting your search or filters</div>
-                <button
-                  onClick={() => {
-                    setQ('');
-                    setCategory('all');
-                    setSort('newest');
-                  }}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white font-semibold hover:from-orange-600 hover:to-orange-500 transition-all"
-                >
-                  Clear filters
-                </button>
               </div>
             )}
-          </>
-        )}
+
+            {!loading && !error && (
+              <>
+                {filtered.length > 0 ? (
+                  <div className="mb-4 text-sm text-slate-600">
+                    Showing <span className="font-semibold text-orange-500">{filtered.length}</span> course{filtered.length !== 1 ? 's' : ''}
+                  </div>
+                ) : null}
+                {filtered.slice(0, 4).map((c, idx) => (
+                  <div key={c.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                    <CourseCard course={{
+                      id: c.id, 
+                      title: c.title, 
+                      description: c.description, 
+                      price: c.price,
+                      thumbnail: c.thumbnail,
+                      bannerImage: c.bannerImage,
+                      level: c.level,
+                      rating: c.rating,
+                      reviews: c.reviews,
+                      enrollmentCount: c.enrollmentCount
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* All Courses Section */}
+        <section className="mb-16">
+          <h2 className="text-2xl font-bold text-slate-900 mb-8">All Available Courses</h2>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {!loading && !error && filtered.length > 4 && (
+              <>
+                {filtered.slice(4).map((c, idx) => (
+                  <div key={c.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+                    <CourseCard course={{
+                      id: c.id, 
+                      title: c.title, 
+                      description: c.description, 
+                      price: c.price,
+                      thumbnail: c.thumbnail,
+                      bannerImage: c.bannerImage,
+                      level: c.level,
+                      rating: c.rating,
+                      reviews: c.reviews,
+                      enrollmentCount: c.enrollmentCount
+                    }} />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
+
+          {filtered.length === 0 && !loading && (
+            <div className="col-span-full py-20 text-center animate-fade-in-up">
+              <div className="text-6xl mb-4">🔍</div>
+              <div className="text-2xl font-bold text-slate-900 mb-2">No courses found</div>
+              <div className="text-slate-600 mb-6">Try adjusting your search or filters</div>
+              <button
+                onClick={() => {
+                  setQ('');
+                  setCategory('all');
+                  setSort('newest');
+                }}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white font-semibold hover:from-orange-600 hover:to-orange-500 transition-all"
+              >
+                Clear filters
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* CTA Section */}
+        <section className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-3xl p-8 md:p-12 text-white text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Start Learning?</h2>
+          <p className="text-lg mb-8 max-w-2xl mx-auto">Join thousands of students who are already advancing their careers with our courses.</p>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link 
+              href="/auth/register"
+              className="px-8 py-3 rounded-xl bg-white text-orange-500 font-bold hover:bg-orange-50 transition shadow-lg"
+            >
+              Get Started Free
+            </Link>
+            <Link 
+              href="/courses"
+              className="px-8 py-3 rounded-xl border-2 border-white/30 text-white font-semibold hover:bg-white/10 transition"
+            >
+              Browse Courses
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

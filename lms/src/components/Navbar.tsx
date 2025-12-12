@@ -212,12 +212,14 @@ function ProfileDropdown({ userName, userRole, handleLogout }: { userName: strin
 
 function NavbarContent() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCoursesOpen, setIsCoursesOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
   const [cartItemCount, setCartItemCount] = useState(0);
   const [showCartPreview, setShowCartPreview] = useState(false);
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const coursesDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check auth status on mount
@@ -266,6 +268,22 @@ function NavbarContent() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (coursesDropdownRef.current && !coursesDropdownRef.current.contains(event.target as Node)) {
+        setIsCoursesOpen(false);
+      }
+    };
+
+    if (isCoursesOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCoursesOpen]);
+
   const handleLogout = () => {
     localStorage.removeItem("authToken");
     localStorage.removeItem("userProfile");
@@ -303,11 +321,14 @@ function NavbarContent() {
           >
             Shop
           </Link>
-          <div className="relative group">
-            <button className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition flex items-center gap-1">
+          <div className="relative" ref={coursesDropdownRef}>
+            <button
+              onClick={() => setIsCoursesOpen(!isCoursesOpen)}
+              className="px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:text-orange-500 hover:bg-orange-50 transition flex items-center gap-1"
+            >
               Courses
               <svg
-                className="w-4 h-4"
+                className={`w-4 h-4 transition-transform ${isCoursesOpen ? 'rotate-180' : ''}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -320,16 +341,20 @@ function NavbarContent() {
                 />
               </svg>
             </button>
-            <div className="absolute left-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+            <div className={`absolute left-0 top-full mt-1 w-48 bg-card rounded-xl shadow-lg border border-border transition-all duration-200 z-50 ${
+                isCoursesOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+              }`}>
               <Link
                 href="/courses"
                 className="block px-4 py-2.5 text-sm text-foreground hover:bg-accent hover:text-primary rounded-t-xl"
+                onClick={() => setIsCoursesOpen(false)}
               >
                 All Courses
               </Link>
               <Link
                 href="/my-learning"
                 className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+                onClick={() => setIsCoursesOpen(false)}
               >
                 My Learning
               </Link>
@@ -338,12 +363,14 @@ function NavbarContent() {
                   <Link
                     href="/admin/courses"
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500"
+                    onClick={() => setIsCoursesOpen(false)}
                   >
                     Manage Courses
                   </Link>
                   <Link
                     href="/admin/courses/create"
                     className="block px-4 py-2.5 text-sm text-slate-700 hover:bg-orange-50 hover:text-orange-500 rounded-b-xl"
+                    onClick={() => setIsCoursesOpen(false)}
                   >
                     Create Course
                   </Link>

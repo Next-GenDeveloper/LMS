@@ -4,8 +4,12 @@ import Link from "next/link";
 import { API_BASE } from "@/lib/api";
 
 function getImageUrl(url: string): string {
+  if (!url) return "/next.svg";
   if (url.startsWith('/uploads/')) {
     return `${API_BASE}${url}`;
+  }
+  if (url.startsWith('http')) {
+    return url;
   }
   return url;
 }

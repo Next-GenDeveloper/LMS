@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import StarRating from "@/components/StarRating";
 import LiveChat from "@/components/LiveChat";
@@ -59,9 +59,9 @@ type Course = {
 export default function CourseDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = params;
+  const { id } = use(params);
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -135,23 +135,9 @@ export default function CourseDetailPage({
         }
       }
 
-      // Process enrollment with payment
-      const response = await fetch(`${API_BASE}/api/enrollments`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ courseId: id, paymentMethod: 'credit_card' }),
-      });
+      // Redirect to payment methods page instead of processing payment directly
+      window.location.href = `/payment-methods?courseId=${id}&title=${encodeURIComponent(course.title)}&price=${course.price}`;
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Enrollment failed");
-      }
-
-      const result = await response.json();
-      alert(result.message || "Enrollment successful! You can now access the course.");
     } catch (err) {
       console.error("Enrollment error:", err);
       alert(`Enrollment failed: ${err instanceof Error ? err.message : "Unknown error"}`);
