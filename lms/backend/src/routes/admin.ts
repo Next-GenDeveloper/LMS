@@ -307,12 +307,14 @@ router.get('/users/:id', requireAuth, requireRole('admin'), async (req: Request,
 // Course CRUD
 router.post('/courses', requireAuth, requireRole('admin'), async (req: Request, res: Response) => {
   try {
-    const { title, description, thumbnail, category, price, level, duration, language, tags, modules } = req.body;
+    const { title, description, bannerImage, thumbnail, pdfFiles, videoFiles, category, price, level, duration, language, tags, modules } = req.body;
 
     const course = new Course({
       title,
       description,
-      thumbnail,
+      bannerImage: bannerImage || thumbnail,
+      pdfFiles: pdfFiles || [],
+      videoFiles: videoFiles || [],
       category,
       price: Number(price),
       level,

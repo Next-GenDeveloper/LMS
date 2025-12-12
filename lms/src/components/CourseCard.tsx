@@ -27,7 +27,7 @@ export type Course = {
 };
 
 export default function CourseCard({ course, onClick }: { course: Course; onClick?: (id: string) => void }) {
-  const imageUrl = course.imageUrl || course.bannerImage || course.thumbnail || "/next.svg";
+  const imageUrl = course.bannerImage || course.imageUrl || course.thumbnail || "/next.svg";
   
   return (
     <Link href={`/courses/${course.id}`}>

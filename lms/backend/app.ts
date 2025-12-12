@@ -13,6 +13,7 @@ import userRoutes from './src/routes/users.ts';
 import uploadRoutes from './src/routes/upload.ts';
 import healthRoutes from './src/routes/health.ts';
 import pdfRoutes from './src/routes/pdf.ts';
+import orderRoutes from './src/routes/orders.ts';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api', healthRoutes);
 app.use('/api/pdf', pdfRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Error handling middleware
 app.use(errorHandler);

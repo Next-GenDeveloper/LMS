@@ -211,7 +211,18 @@ export default function CoursesPage() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((c, idx) => (
                 <div key={c.id} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
-                  <CourseCard course={{ id: c.id, title: c.title, description: c.description, price: c.price, thumbnail: c.thumbnail }} />
+                  <CourseCard course={{ 
+                    id: c.id, 
+                    title: c.title, 
+                    description: c.description, 
+                    price: c.price, 
+                    thumbnail: c.thumbnail,
+                    bannerImage: c.bannerImage,
+                    level: c.level,
+                    rating: c.rating,
+                    reviews: c.reviews,
+                    enrollmentCount: c.enrollmentCount
+                  }} />
                 </div>
               ))}
             </div>

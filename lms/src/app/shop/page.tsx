@@ -178,14 +178,24 @@ export default function ShopPage() {
       e.stopPropagation();
     }
     setCartCount(prev => prev + 1);
-    // Store in localStorage for cart
+    
+    // Store in localStorage for cart with proper structure
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const existingItem = cart.find((item: any) => item.id === product.id);
+    
     if (existingItem) {
       existingItem.quantity += 1;
     } else {
-      cart.push({ ...product, quantity: 1 });
+      // Add product with proper cart structure
+      cart.push({ 
+        id: Number(product.id),
+        name: product.name, 
+        price: product.price,
+        image: product.image,
+        quantity: 1 
+      });
     }
+    
     localStorage.setItem('cart', JSON.stringify(cart));
     
     // Dispatch custom event to update navbar cart

@@ -418,15 +418,25 @@ export default function CreateCoursePage() {
                 <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
                   <span className="text-orange-500">📂</span> Category *
                 </label>
-                <input
-                  type="text"
+                <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition"
-                  placeholder="e.g., Programming, Design, Marketing"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition font-semibold"
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  <option value="Programming">💻 Programming</option>
+                  <option value="Design">🎨 Design</option>
+                  <option value="Marketing">📈 Marketing</option>
+                  <option value="Business">💼 Business</option>
+                  <option value="Photography">📷 Photography</option>
+                  <option value="Music">🎵 Music</option>
+                  <option value="Health & Fitness">🏃 Health & Fitness</option>
+                  <option value="Language">🌍 Language</option>
+                  <option value="Personal Development">🌟 Personal Development</option>
+                  <option value="Data Science">📊 Data Science</option>
+                </select>
               </div>
 
               <div>

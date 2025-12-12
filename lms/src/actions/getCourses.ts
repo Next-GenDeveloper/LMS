@@ -30,7 +30,7 @@ export async function getCourses(): Promise<ApiCourse[]> {
       description: c.description,
       price: c.price || 0,
       thumbnail: c.bannerImage || c.thumbnail || '/next.svg',
-      bannerImage: c.bannerImage,
+      bannerImage: c.bannerImage || c.thumbnail,
       pdfFiles: c.pdfFiles || [],
       videoFiles: c.videoFiles || [],
       category: c.category || 'General',
