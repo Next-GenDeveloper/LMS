@@ -1,12 +1,7 @@
 "use client";
-import { useState, useEffect, use } from "react";
-import Link from "next/link";
+import { useEffect, useState, use } from "react";
 import StarRating from "@/components/StarRating";
-import LiveChat from "@/components/LiveChat";
-import StructuredExamination from "@/components/StructuredExamination";
-import CompetitiveChallenges from "@/components/CompetitiveChallenges";
 import { API_BASE } from "@/lib/api";
-import Image from "next/image";
 
 type Lesson = {
   title: string;
@@ -56,17 +51,11 @@ type Course = {
   curriculum: CurriculumSection[];
 };
 
-export default function CourseDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<number[]>([0]);
-  const [activeTab, setActiveTab] = useState<"overview" | "curriculum" | "reviews">("overview");
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -89,41 +78,48 @@ export default function CourseDetailPage({
     fetchCourseDetails();
   }, [id]);
 
-  const toggleSection = (index: number) => {
-    setExpandedSections((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
-    );
-  };
+  const totalLessons =
+    course?.curriculum?.reduce((acc, section) => acc + section.lessons.length, 0) || 0;
 
-  const totalLessons = course?.curriculum?.reduce(
-    (acc, section) => acc + section.lessons.length,
-    0
-  ) || 0;
+  const totalDuration =
+    course?.curriculum?.reduce((acc, section) => {
+      return (
+        acc +
+        section.lessons.reduce((lessonAcc, lesson) => {
+          const [mins] = lesson.duration.split(":").map(Number);
+          return lessonAcc + mins;
+        }, 0)
+      );
+    }, 0) || 0;
 
-  const totalDuration = course?.curriculum?.reduce((acc, section) => {
-    return (
-      acc +
-      section.lessons.reduce((lessonAcc, lesson) => {
-        const [mins] = lesson.duration.split(":").map(Number);
-        return lessonAcc + mins;
-      }, 0)
-    );
-  }, 0) || 0;
+  const strategyHighlights = [
+    { title: "Headline Formulas", copy: "Proprietary hooks that stop scrolling buyers on eBay." },
+    { title: "Conversion Copy", copy: "Psychology-backed scripts aligned with premium positioning." },
+    { title: "Pricing Architecture", copy: "Dynamic tiered pricing to keep you competitive and profitable." },
+    { title: "Visual Systems", copy: "Cohesive imagery, mockups, and templates that look curated." },
+  ];
+
+  const consultingServices = [
+    { title: "Launch & Scale Plan", detail: "90-day roadmaps with benchmarking and KPI sprints." },
+    { title: "Creative Direction", detail: "Story-driven storefront refreshes and curated imagery." },
+    { title: "High-Ticket Coaching", detail: "Weekly office hours, KPI reviews, and positioning feedback." },
+  ];
+
+  const testimonialList = Array.isArray(course?.reviews) ? course.reviews : [];
 
   const handleEnroll = async () => {
+    if (!course) {
+      alert("Course not found");
+      return;
+    }
+
     const token = localStorage.getItem("authToken");
     if (!token) {
       window.location.href = `/auth/login?next=${encodeURIComponent(`/courses/${id}`)}`;
       return;
     }
 
-    if (!course) {
-      alert("Course not found");
-      return;
-    }
-
     try {
-      // First check if user is already enrolled
       const checkResponse = await fetch(`${API_BASE}/api/enrollments/check/${id}`, {
         method: "GET",
         headers: {
@@ -133,16 +129,16 @@ export default function CourseDetailPage({
       });
 
       if (checkResponse.ok) {
-        const checkData = await checkResponse.json();
-        if (checkData.isEnrolled) {
-          alert("You are already enrolled in this course! You can access it from your dashboard.");
+        const { isEnrolled } = await checkResponse.json();
+        if (isEnrolled) {
+          alert("You already have access to this training.");
           return;
         }
       }
 
-      // Redirect to payment methods page instead of processing payment directly
-      window.location.href = `/payment-methods?courseId=${id}&title=${encodeURIComponent(course.title)}&price=${course.price}`;
-
+      window.location.href = `/payment-methods?courseId=${id}&title=${encodeURIComponent(
+        course.title
+      )}&price=${course.price}`;
     } catch (err) {
       console.error("Enrollment error:", err);
       alert(`Enrollment failed: ${err instanceof Error ? err.message : "Unknown error"}`);
@@ -151,22 +147,22 @@ export default function CourseDetailPage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-        <p className="ml-4 text-gray-700">Loading course details...</p>
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 rounded-full border-b-2 border-yellow-400" />
+        <p className="ml-4 text-gray-200">Loading premium insights...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
-          <h2 className="text-xl font-bold text-red-600 mb-4">Error</h2>
-          <p className="text-gray-700 mb-4">{error}</p>
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+        <div className="bg-white/5 p-8 rounded-3xl border border-white/10 text-center max-w-md">
+          <h2 className="text-2xl font-semibold text-gray-100 mb-3">Data unavailable</h2>
+          <p className="text-gray-300 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            className="px-6 py-3 bg-yellow-500 text-blue-950 rounded-full font-semibold"
           >
             Retry
           </button>
@@ -177,392 +173,211 @@ export default function CourseDetailPage({
 
   if (!course) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md text-center">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Course Not Found</h2>
-          <p className="text-gray-600 mb-4">The course you're looking for doesn't exist.</p>
-          <Link
-            href="/courses"
-            className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-          >
-            Browse Courses
-          </Link>
+      <div className="min-h-screen bg-blue-950 flex items-center justify-center">
+        <div className="bg-white/5 p-8 rounded-3xl border border-white/10 text-center max-w-md">
+          <h2 className="text-2xl font-semibold text-gray-100 mb-3">Program not found</h2>
+          <p className="text-gray-300 mb-6">The offering you requested is unavailable right now.</p>
         </div>
       </div>
     );
   }
 
-  // Helper function to get banner image URL
-  const getBannerImageUrl = (url?: string): string => {
-    if (!url) return "bg-gradient-to-br from-purple-600 to-blue-600";
-    if (url.startsWith('http')) return url;
-    return `${API_BASE}${url}`;
-  };
-
-  // Helper function to get banner image style
-  const getBannerStyle = (url?: string): string => {
-    if (!url) return "bg-gradient-to-br from-purple-600 to-blue-600";
-    return "relative";
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero Section with Banner Image */}
-      <section className={`relative py-8 sm:py-12 md:py-16`}>
-        {course.bannerImage ? (
-          <div className={getBannerStyle(course.bannerImage)}>
-            <Image
-              src={getBannerImageUrl(course.bannerImage)}
-              alt={course.title}
-              fill
-              className="object-cover"
-              priority
-            />
-            <div className="absolute inset-0 bg-black/50" />
-          </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600" />
-        )}
-
-        <div className="container mx-auto px-4 sm:px-6 relative z-10">
-          <div className="max-w-4xl">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 text-white/70 text-xs sm:text-sm mb-4">
-              <Link href="/" className="hover:text-white">
-                Home
-              </Link>
-              <span>/</span>
-              <Link href="/courses" className="hover:text-white">
-                Courses
-              </Link>
-              <span>/</span>
-              <span className="text-white">{course.title}</span>
-            </nav>
-
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-3 sm:mb-4">
+    <div className="min-h-screen bg-gray-50 text-blue-950">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800 opacity-95" />
+        <div className="absolute -top-24 right-10 h-72 w-72 rounded-full bg-yellow-400/30 blur-3xl" />
+        <div className="absolute bottom-0 left-10 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="container mx-auto px-4 sm:px-6 relative z-10 py-20">
+          <div className="max-w-4xl space-y-6">
+            <p className="text-xs uppercase tracking-[0.5em] text-yellow-300">9tangle</p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-semibold text-white leading-tight">
               {course.title}
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-white/90 mb-4 sm:mb-6 max-w-3xl">
-              {course.description}
-            </p>
-
-            {/* Course Meta */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-white/90 text-xs sm:text-sm mb-4 sm:mb-6">
-              <div className="flex items-center gap-1">
-                <StarRating value={course.rating} />
-                <span className="font-semibold">{course.rating}</span>
-                <span className="text-white/70">
-                  ({typeof course.reviews === "number" ? course.reviews : course.reviews.length} reviews)
-                </span>
+            <p className="text-lg text-gray-200 max-w-3xl">{course.description}</p>
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={handleEnroll}
+                className="px-8 py-3 rounded-full bg-yellow-400 text-blue-950 font-semibold transition hover:scale-[1.02]"
+              >
+                Secure enrollment
+              </button>
+              <a
+                href="#consultancy"
+                className="px-8 py-3 rounded-full border border-white/40 text-white font-semibold"
+              >
+                Book consultancy
+              </a>
+            </div>
+            <div className="flex gap-10 text-sm text-gray-200">
+              <div>
+                <p className="text-3xl font-semibold">{course.students.toLocaleString()}</p>
+                <p className="text-gray-400">Learners guided</p>
               </div>
-              <span className="hidden sm:inline">•</span>
-              <span>{course.students.toLocaleString()} students</span>
-              <span className="hidden sm:inline">•</span>
-              <span>{course.duration}</span>
+              <div>
+                <p className="text-3xl font-semibold">{course.rating.toFixed(1)}</p>
+                <p className="text-gray-400">Average rating</p>
+              </div>
+              <div>
+                <p className="text-3xl font-semibold">{Math.floor(totalDuration / 60)}h</p>
+                <p className="text-gray-400">Strategy time</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Left Content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            {/* Tabs */}
-            <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border">
-              {(["overview", "curriculum", "reviews"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm font-semibold transition ${
-                    activeTab === tab
-                      ? "bg-orange-500 text-white"
-                      : "text-slate-600 hover:bg-orange-50"
-                  }`}
+      <main className="relative z-10">
+        <div className="container mx-auto px-4 sm:px-6 py-16 space-y-20">
+          <section id="training" className="grid lg:grid-cols-3 gap-8 items-start">
+            <div className="space-y-4">
+              <p className="text-sm uppercase tracking-[0.4em] text-yellow-500">Training Path</p>
+              <h2 className="text-3xl font-semibold">Course Selling & eBay Mastery</h2>
+              <p className="text-gray-600">
+                9tangle combines consultancy with immersive training so you can launch listings, sell courses, and build recurring revenue on eBay.
+              </p>
+            </div>
+            <div className="lg:col-span-2 space-y-6">
+              <div className="grid sm:grid-cols-2 gap-4">
+                {course.whatYouLearn.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex flex-col gap-2 p-5 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm transition hover:-translate-y-1"
+                  >
+                    <span className="text-xs uppercase tracking-[0.3em] text-yellow-600">Module</span>
+                    <h3 className="text-base font-semibold text-blue-950">{item}</h3>
+                    <p className="text-sm text-gray-600">Actionable tactics for listing and selling online courses.</p>
+                  </div>
+                ))}
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="p-4 bg-gradient-to-b from-blue-900 to-blue-800 text-white rounded-2xl shadow-lg">
+                  <p className="text-3xl font-semibold">{course.curriculum.length}</p>
+                  <p className="text-sm text-gray-300">Workshops</p>
+                </div>
+                <div className="p-4 bg-gradient-to-b from-blue-900 to-blue-800 text-white rounded-2xl shadow-lg">
+                  <p className="text-3xl font-semibold">{totalLessons}</p>
+                  <p className="text-sm text-gray-300">Lessons</p>
+                </div>
+                <div className="p-4 bg-gradient-to-b from-blue-900 to-blue-800 text-white rounded-2xl shadow-lg">
+                  <p className="text-3xl font-semibold">{course.duration}</p>
+                  <p className="text-sm text-gray-300">Program</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section id="listing" className="space-y-8">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm uppercase tracking-[0.4em] text-gray-500">Product Listing Strategies</p>
+              <h2 className="text-3xl font-semibold text-blue-950">Craft listings that convert</h2>
+              <p className="text-gray-600 max-w-3xl">
+                We walk through every detail—from copy to visuals—so your eBay catalog looks premium, tells a story, and drives buyers to checkout.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              {strategyHighlights.map((strategy) => (
+                <div
+                  key={strategy.title}
+                  className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm hover:border-yellow-400 transition"
                 >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
+                  <div className="text-yellow-600 text-2xl">•</div>
+                  <h3 className="text-xl font-semibold text-blue-950 mt-2">{strategy.title}</h3>
+                  <p className="text-sm text-gray-600 mt-2">{strategy.copy}</p>
+                </div>
               ))}
             </div>
+          </section>
 
-            {/* Overview Tab */}
-            {activeTab === "overview" && (
-              <div className="space-y-6 sm:space-y-8">
-                {/* What You'll Learn */}
-                <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border">
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
-                    What you'll learn
-                  </h2>
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    {course.whatYouLearn.map((item, idx) => (
-                      <div key={idx} className="flex items-start gap-3">
-                        <span className="text-green-500 mt-0.5">✓</span>
-                        <span className="text-sm text-slate-700">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Requirements */}
-                <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border">
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-4">
-                    Requirements
-                  </h2>
-                  <ul className="space-y-2">
-                    {course.requirements.map((req, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-sm text-slate-700">
-                        <span className="text-orange-500">•</span>
-                        {req}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-
-            {/* Curriculum Tab */}
-            {activeTab === "curriculum" && (
-              <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
-                <div className="p-4 sm:p-5 border-b bg-slate-50">
-                  <h2 className="text-lg sm:text-xl font-bold text-slate-900">
-                    Course Content
-                  </h2>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                    {course.curriculum.length} sections • {totalLessons} lessons •{" "}
-                    {Math.floor(totalDuration / 60)}h {totalDuration % 60}m total
-                  </p>
-                </div>
-                <div className="divide-y">
-                  {course.curriculum.map((section, sectionIdx) => (
-                    <div key={sectionIdx}>
-                      <button
-                        onClick={() => toggleSection(sectionIdx)}
-                        className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50 transition"
-                      >
-                        <div className="flex items-center gap-3">
-                          <svg
-                            className={`w-4 h-4 sm:w-5 sm:h-5 text-slate-400 transition-transform ${
-                              expandedSections.includes(sectionIdx) ? "rotate-90" : ""
-                            }`}
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                          <span className="font-semibold text-sm sm:text-base text-slate-900">
-                            {section.title}
-                          </span>
-                        </div>
-                        <span className="text-xs sm:text-sm text-slate-500">
-                          {section.lessons.length} lessons
-                        </span>
-                      </button>
-                      {expandedSections.includes(sectionIdx) && (
-                        <div className="bg-slate-50 divide-y divide-slate-100">
-                          {section.lessons.map((lesson, lessonIdx) => (
-                            <div
-                              key={lessonIdx}
-                              className="flex items-center justify-between px-4 sm:px-5 py-3 pl-10 sm:pl-12"
-                            >
-                              <div className="flex items-center gap-3">
-                                <svg
-                                  className="w-4 h-4 text-slate-400"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                                  />
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                  />
-                                </svg>
-                                <span className="text-xs sm:text-sm text-slate-700">
-                                  {lesson.title}
-                                </span>
-                                {lesson.preview && (
-                                  <span className="px-2 py-0.5 bg-orange-100 text-orange-600 text-[10px] sm:text-xs font-medium rounded">
-                                    Preview
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-xs sm:text-sm text-slate-500">
-                                {lesson.duration}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Reviews Tab */}
-            {activeTab === "reviews" && (
-              <div className="space-y-4">
-                {(Array.isArray(course.reviews) ? course.reviews : []).map(
-                  (review, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border"
-                    >
-                      <div className="flex items-start gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-orange-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm sm:text-base flex-shrink-0">
-                          {review.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-semibold text-slate-900 text-sm sm:text-base">
-                              {review.name}
-                            </h4>
-                            <span className="text-xs text-slate-500">{review.date}</span>
-                          </div>
-                          <div className="mt-1">
-                            <StarRating value={review.rating} />
-                          </div>
-                          <p className="mt-2 text-sm text-slate-600">{review.text}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Sidebar - Purchase Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg border sticky top-20 overflow-hidden">
-              {/* Preview Image - using banner image consistently */}
-              <div className={`h-40 sm:h-48 relative`}>
-                {course.bannerImage ? (
-                  <Image
-                    src={getBannerImageUrl(course.bannerImage)}
-                    alt={course.title}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-blue-600" />
-                )}
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                  <button className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/90 flex items-center justify-center hover:bg-white transition">
-                    <svg
-                      className="w-6 h-6 sm:w-8 sm:h-8 text-orange-500 ml-1"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </button>
-                </div>
-                <span className="absolute top-3 left-3 px-2 py-1 bg-orange-500 text-white text-xs font-bold rounded">
-                  Bestseller
-                </span>
-              </div>
-
-              <div className="p-4 sm:p-5">
-                {/* Price */}
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                    ${course.price}
-                  </span>
-                  <span className="text-base sm:text-lg text-slate-400 line-through">
-                    ${course.originalPrice}
-                  </span>
-                  <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">
-                    {Math.round((1 - course.price / course.originalPrice) * 100)}% OFF
-                  </span>
-                </div>
-
-                {/* CTA Buttons */}
-                <button
-                  onClick={handleEnroll}
-                  className="w-full py-3 sm:py-3.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-400 text-white font-bold text-sm sm:text-base hover:from-orange-600 hover:to-orange-500 transition shadow-lg"
+          <section id="consultancy" className="grid lg:grid-cols-3 gap-6">
+            <div className="space-y-4">
+              <p className="text-sm uppercase tracking-[0.4em] text-yellow-500">Consultancy Services</p>
+              <h2 className="text-3xl font-semibold text-blue-950">Strategic partnership, not just training</h2>
+              <p className="text-gray-600">
+                We map your goals, audit your eBay presence, and help you position your digital products in the most compelling, business-friendly way.
+              </p>
+            </div>
+            <div className="lg:col-span-2 space-y-4">
+              {consultingServices.map((service) => (
+                <div
+                  key={service.title}
+                  className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm"
                 >
-                  Enroll Now
-                </button>
-                <button className="w-full mt-2 py-3 sm:py-3.5 rounded-xl border-2 border-orange-200 text-orange-600 font-semibold text-sm sm:text-base hover:bg-orange-50 transition">
-                  Add to Wishlist
-                </button>
-
-                <p className="text-center text-xs text-slate-500 mt-3">
-                  30-day money-back guarantee
-                </p>
-
-                {/* Course Includes */}
-                <div className="mt-5 pt-5 border-t space-y-3">
-                  <h4 className="font-semibold text-slate-900 text-sm">
-                    This course includes:
-                  </h4>
-                  <div className="space-y-2 text-xs sm:text-sm text-slate-600">
-                    <div className="flex items-center gap-2">
-                      <span>📹</span>
-                      <span>{Math.floor(totalDuration / 60)}+ hours of video</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>📚</span>
-                      <span>{totalLessons} lessons</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>📱</span>
-                      <span>Access on mobile and TV</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span>♾️</span>
-                      <span>Full lifetime access</span>
-                    </div>
-                    {course.certificate && (
-                      <div className="flex items-center gap-2">
-                        <span>🏆</span>
-                        <span>Certificate of completion</span>
-                      </div>
-                    )}
-                  </div>
+                  <h3 className="text-xl font-semibold text-blue-950">{service.title}</h3>
+                  <p className="text-gray-600 mt-2">{service.detail}</p>
                 </div>
+              ))}
+            </div>
+          </section>
 
-                {/* Share */}
-                <div className="mt-5 pt-5 border-t">
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-xs text-slate-500">Share:</span>
-                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition">
-                      📤
-                    </button>
-                    <button className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition">
-                      🔗
-                    </button>
-                  </div>
-                </div>
+          <section className="space-y-6">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm uppercase tracking-[0.4em] text-yellow-500">Results</p>
+              <h2 className="text-3xl font-semibold text-blue-950">Designed for eBay pros</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              <div className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm">
+                <p className="text-3xl font-semibold text-yellow-600">{course.students.toLocaleString()}</p>
+                <p className="text-sm text-gray-600">Sellers onboarded</p>
+              </div>
+              <div className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm">
+                <p className="text-3xl font-semibold text-yellow-600">{Math.round(course.rating * 20)}%</p>
+                <p className="text-sm text-gray-600">Avg. sales lift</p>
+              </div>
+              <div className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm">
+                <p className="text-3xl font-semibold text-yellow-600">{Math.floor(totalDuration / 10)}+</p>
+                <p className="text-sm text-gray-600">Hours of strategy time</p>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section className="space-y-8">
+            <div className="flex flex-col gap-3">
+              <p className="text-sm uppercase tracking-[0.4em] text-yellow-500">Testimonials</p>
+              <h2 className="text-3xl font-semibold text-blue-950">What premium sellers say</h2>
+            </div>
+            <div className="grid gap-4 lg:grid-cols-3">
+              {testimonialList.slice(0, 3).map((review, idx) => (
+                <div
+                  key={`${review.name}-${idx}`}
+                  className="p-6 bg-gray-100 border border-gray-200 rounded-2xl shadow-sm"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-blue-950">{review.name}</h3>
+                    <StarRating value={review.rating} />
+                  </div>
+                  <p className="text-sm text-gray-600 mt-3">{review.text}</p>
+                  <p className="text-xs text-gray-500 mt-4">{review.date}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-blue-950 text-white rounded-3xl p-12 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/30 via-blue-900 to-blue-900 opacity-90" />
+            <div className="relative space-y-6 max-w-3xl">
+              <p className="text-sm uppercase tracking-[0.4em] text-yellow-200">Pricing</p>
+              <h2 className="text-4xl font-semibold">Enroll in the 9tangle eBay Consultant Program</h2>
+              <p className="text-gray-200">
+                Premium coaching, onboarding playbooks, and a dedicated consultant to help you sell courses and digital products with confidence on eBay.
+              </p>
+              <div className="flex flex-wrap items-center gap-6">
+                <div>
+                  <span className="text-5xl font-bold">${course.price}</span>
+                  <p className="text-gray-400 text-sm line-through">${course.originalPrice}</p>
+                </div>
+                <button
+                  onClick={handleEnroll}
+                  className="px-8 py-3 rounded-full bg-white text-blue-950 font-semibold hover:scale-[1.01] transition"
+                >
+                  Secure Your Seat
+                </button>
+              </div>
+              <p className="text-sm text-gray-200">Includes lifetime access, community previews, and one live strategy session.</p>
+            </div>
+          </section>
         </div>
-      </div>
-
-      {/* Competitive Challenges */}
-      <CompetitiveChallenges courseId={id} />
-
-      {/* Structured Examinations */}
-      <StructuredExamination courseId={id} />
-
-      {/* Live Chat Component */}
-      <LiveChat courseId={id} />
+      </main>
     </div>
   );
 }
