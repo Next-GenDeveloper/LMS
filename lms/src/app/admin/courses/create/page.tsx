@@ -32,34 +32,52 @@ export default function CreateCoursePage() {
   const [pdfPreviews, setPdfPreviews] = useState<FileWithPreview[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<FileWithPreview[]>([]);
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [isDragOver, setIsDragOver] = useState<{ [key: string]: boolean }>({});
+  const [dragOver, setDragOver] = useState<{ [key: string]: boolean }>({});
 
   const uploadFile = async (file: File): Promise<string> => {
-    const token = localStorage.getItem("authToken");
-    const formDataUpload = new FormData();
-    formDataUpload.append('file', file);
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem("authToken");
+      const formDataUpload = new FormData();
+      formDataUpload.append('file', file);
 
-    const response = await fetch("http://localhost:5000/api/upload/file", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formDataUpload,
+      const xhr = new XMLHttpRequest();
+
+      // Track progress
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setUploadProgress(prev => ({ ...prev, [file.name]: percentComplete }));
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+            resolve(data.url);
+          } catch (e) {
+            reject(new Error('Invalid response format'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || "Upload failed"));
+          } catch (e) {
+            reject(new Error("Upload failed: Server error"));
+          }
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+
+      xhr.open('POST', "http://localhost:5000/api/upload/file");
+      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      xhr.send(formDataUpload);
     });
-
-    if (response.ok) {
-      if (!response.headers.get('content-type')?.includes('application/json')) {
-        throw new Error('Expected JSON response');
-      }
-      const data = await response.json();
-      return data.url;
-    } else {
-      if (response.headers.get('content-type')?.includes('application/json')) {
-        const error = await response.json();
-        throw new Error(error.message || "Upload failed");
-      } else {
-        throw new Error("Upload failed: Server error");
-      }
-    }
   };
 
   const handleFileUpload = async (files: FileList | null, type: 'banner' | 'pdf' | 'video') => {
@@ -70,13 +88,13 @@ export default function CreateCoursePage() {
       const file = files[i];
       const sizeInMB = file.size / (1024 * 1024);
       
-      if (type === 'pdf' && sizeInMB > 10) {
-        alert(`PDF file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 10 MB.`);
+      if (type === 'pdf' && sizeInMB > 50) {
+        alert(`PDF file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 50 MB.`);
         return;
       }
-      
-      if (type === 'video' && sizeInMB > 35) {
-        alert(`Video file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 35 MB.`);
+
+      if (type === 'video' && sizeInMB > 50) {
+        alert(`Video file "${file.name}" is ${sizeInMB.toFixed(2)} MB. Maximum allowed size is 50 MB.`);
         return;
       }
     }
@@ -133,6 +151,25 @@ export default function CreateCoursePage() {
   const removeVideo = (index: number) => {
     setVideoPreviews(prev => prev.filter((_, i) => i !== index));
     setFormData(prev => ({ ...prev, videoFiles: prev.videoFiles.filter((_, i) => i !== index) }));
+  };
+
+  const handleDragOver = (e: React.DragEvent, type: string) => {
+    e.preventDefault();
+    setIsDragOver(prev => ({ ...prev, [type]: true }));
+  };
+
+  const handleDragLeave = (e: React.DragEvent, type: string) => {
+    e.preventDefault();
+    setIsDragOver(prev => ({ ...prev, [type]: false }));
+  };
+
+  const handleDrop = (e: React.DragEvent, type: 'banner' | 'pdf' | 'video') => {
+    e.preventDefault();
+    setIsDragOver(prev => ({ ...prev, [type]: false }));
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(files as any, type);
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -278,15 +315,33 @@ export default function CreateCoursePage() {
               {/* Banner Image */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                  <span className="text-green-500">🖼️</span> Banner Image
+                  <span className="text-green-500">🖼️</span> Banner Image (Max 10 MB)
                 </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(e.target.files, 'banner')}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition"
-                  disabled={uploading}
-                />
+                <div
+                  className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${
+                    isDragOver.banner
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-300 hover:border-green-400'
+                  } ${uploading ? 'opacity-50' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, 'banner')}
+                  onDragLeave={(e) => handleDragLeave(e, 'banner')}
+                  onDrop={(e) => handleDrop(e, 'banner')}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e.target.files, 'banner')}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={uploading}
+                  />
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🖼️</div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {isDragOver.banner ? 'Drop image here' : 'Drag & drop an image or click to browse'}
+                    </p>
+                    <p className="text-xs text-gray-500">Supported: JPG, PNG (Max 10 MB)</p>
+                  </div>
+                </div>
                 {formData.bannerImage && (
                   <div className="mt-3 p-3 bg-green-50 border-2 border-green-200 rounded-xl flex items-center gap-2">
                     <span className="text-green-600 text-xl">✓</span>
@@ -298,16 +353,34 @@ export default function CreateCoursePage() {
               {/* PDF Files */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                  <span className="text-red-500">📄</span> PDF Files (Max 10 MB each)
+                  <span className="text-red-500">📄</span> PDF Files (Max 50 MB each)
                 </label>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  multiple
-                  onChange={(e) => handleFileUpload(e.target.files, 'pdf')}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
-                  disabled={uploading}
-                />
+                <div
+                  className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${
+                    isDragOver.pdf
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-300 hover:border-red-400'
+                  } ${uploading ? 'opacity-50' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, 'pdf')}
+                  onDragLeave={(e) => handleDragLeave(e, 'pdf')}
+                  onDrop={(e) => handleDrop(e, 'pdf')}
+                >
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    multiple
+                    onChange={(e) => handleFileUpload(e.target.files, 'pdf')}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={uploading}
+                  />
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">📄</div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {isDragOver.pdf ? 'Drop PDFs here' : 'Drag & drop PDFs or click to browse'}
+                    </p>
+                    <p className="text-xs text-gray-500">Supported: PDF (Max 50 MB each)</p>
+                  </div>
+                </div>
                 <p className="text-xs text-slate-600 mt-1">Upload course materials, notes, or resources in PDF format</p>
                 
                 {/* PDF Previews */}
@@ -323,11 +396,22 @@ export default function CreateCoursePage() {
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-slate-900 text-sm line-clamp-1">{pdf.name}</p>
                             <p className="text-xs text-slate-600">{formatFileSize(pdf.size)}</p>
+                            {uploadProgress[pdf.name] !== undefined && uploadProgress[pdf.name] < 100 && (
+                              <div className="mt-2">
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-red-500 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${uploadProgress[pdf.name]}%` }}
+                                  ></div>
+                                </div>
+                                <p className="text-xs text-slate-500 mt-1">{Math.round(uploadProgress[pdf.name])}% uploaded</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <a
-                            href={`http://localhost:5000${pdf.url}`}
+                            href={pdf.url}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-xs font-bold"
@@ -351,16 +435,34 @@ export default function CreateCoursePage() {
               {/* Video Files */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
-                  <span className="text-purple-500">🎥</span> Video Files (Max 35 MB each)
+                  <span className="text-purple-500">🎥</span> Video Files (Max 50 MB each)
                 </label>
-                <input
-                  type="file"
-                  accept="video/*"
-                  multiple
-                  onChange={(e) => handleFileUpload(e.target.files, 'video')}
-                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
-                  disabled={uploading}
-                />
+                <div
+                  className={`relative border-2 border-dashed rounded-xl p-6 transition-colors ${
+                    isDragOver.video
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-300 hover:border-purple-400'
+                  } ${uploading ? 'opacity-50' : ''}`}
+                  onDragOver={(e) => handleDragOver(e, 'video')}
+                  onDragLeave={(e) => handleDragLeave(e, 'video')}
+                  onDrop={(e) => handleDrop(e, 'video')}
+                >
+                  <input
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    onChange={(e) => handleFileUpload(e.target.files, 'video')}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={uploading}
+                  />
+                  <div className="text-center">
+                    <div className="text-4xl mb-2">🎥</div>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {isDragOver.video ? 'Drop videos here' : 'Drag & drop videos or click to browse'}
+                    </p>
+                    <p className="text-xs text-gray-500">Supported: MP4 (Max 50 MB each)</p>
+                  </div>
+                </div>
                 <p className="text-xs text-slate-600 mt-1">Upload course lessons and tutorial videos</p>
                 
                 {/* Video Previews */}
@@ -377,6 +479,17 @@ export default function CreateCoursePage() {
                             <div className="flex-1 min-w-0">
                               <p className="font-bold text-slate-900 text-sm line-clamp-1">{video.name}</p>
                               <p className="text-xs text-slate-600">{formatFileSize(video.size)}</p>
+                              {uploadProgress[video.name] !== undefined && uploadProgress[video.name] < 100 && (
+                                <div className="mt-2">
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className="bg-purple-500 h-2 rounded-full transition-all duration-300"
+                                      style={{ width: `${uploadProgress[video.name]}%` }}
+                                    ></div>
+                                  </div>
+                                  <p className="text-xs text-slate-500 mt-1">{Math.round(uploadProgress[video.name])}% uploaded</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                           <button

@@ -130,6 +130,8 @@ router.get('/:id/details', async (req: Request, res: Response): Promise<void> =>
       title: c.title,
       description: c.description,
       bannerImage: c.bannerImage,
+      pdfFiles: c.pdfFiles || [],
+      videoFiles: c.videoFiles || [],
       price: c.price,
       originalPrice: c.price * 2, // Simple way to show discount
       rating: c.rating,
@@ -235,3 +237,4 @@ router.delete('/:id', requireAuth, requireRole('admin'), async (req: Request, re
 });
 
 export default router;
+

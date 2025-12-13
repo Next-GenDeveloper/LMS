@@ -57,8 +57,8 @@ function CartDropdown({ cartItemCount, cartItems, showCartPreview, setShowCartPr
           </div>
           
           <div className="max-h-80 overflow-y-auto p-4 space-y-3">
-            {cartItems.slice(0, 4).map((item) => (
-              <div key={item.id} className="flex gap-3 pb-3 border-b border-gray-100 last:border-0">
+            {cartItems.slice(0, 4).map((item, index) => (
+              <div key={`${item.id}-${index}`} className="flex gap-3 pb-3 border-b border-gray-100 last:border-0">
                 <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                   {item.images && item.images.length > 0 ? (
                     item.images[0].startsWith('data:') || item.images[0].startsWith('http') ? (

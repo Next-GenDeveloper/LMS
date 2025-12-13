@@ -1,0 +1,95 @@
+{
+  "name": "cloudinary-upload-setup",
+  "description": "NPM packages required for Cloudinary file upload integration",
+  "instructions": {
+    "backend": {
+      "description": "Run in lms/backend directory",
+      "commands": [
+        "npm install cloudinary multer",
+        "npm install -D @types/multer"
+      ]
+    },
+    "frontend": {
+      "description": "Optional - already included in most Next.js projects",
+      "commands": [
+        "npm install axios (optional, for alternate upload method)"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@types/multer": "^1.4.11"
+  },
+  "dependencies": {
+    "cloudinary": "^1.40.0",
+    "multer": "^1.4.5-lts.1"
+  },
+  "packageDescriptions": {
+    "cloudinary": {
+      "version": "^1.40.0",
+      "description": "Official Cloudinary Node.js SDK for server-side file uploads",
+      "website": "https://cloudinary.com",
+      "npmUrl": "https://www.npmjs.com/package/cloudinary",
+      "documentation": "https://cloudinary.com/documentation/node_integration"
+    },
+    "multer": {
+      "version": "^1.4.5-lts.1",
+      "description": "Express middleware for handling multipart/form-data (file uploads)",
+      "website": "https://github.com/expressjs/multer",
+      "npmUrl": "https://www.npmjs.com/package/multer",
+      "documentation": "https://github.com/expressjs/multer/blob/master/README.md"
+    },
+    "@types/multer": {
+      "version": "^1.4.11",
+      "description": "TypeScript type definitions for multer",
+      "website": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "npmUrl": "https://www.npmjs.com/package/@types/multer",
+      "documentation": "TypeScript definitions only"
+    },
+    "axios": {
+      "version": "^1.6.0+",
+      "description": "Promise-based HTTP client (alternative to XMLHttpRequest)",
+      "website": "https://axios-http.com",
+      "npmUrl": "https://www.npmjs.com/package/axios",
+      "documentation": "https://axios-http.com/docs/intro",
+      "note": "Optional - FileUploadForm uses native XMLHttpRequest"
+    }
+  },
+  "installationSteps": {
+    "step1": {
+      "title": "Install Backend Packages",
+      "command": "cd lms/backend && npm install cloudinary multer && npm install -D @types/multer",
+      "description": "Installs Cloudinary SDK and multer middleware in backend"
+    },
+    "step2": {
+      "title": "Create .env File",
+      "location": "lms/backend/.env",
+      "content": "CLOUDINARY_CLOUD_NAME=your_cloud_name\nCLOUDINARY_API_KEY=your_api_key\nCLOUDINARY_API_SECRET=your_api_secret"
+    },
+    "step3": {
+      "title": "Register Routes",
+      "location": "lms/backend/src/app.ts",
+      "code": "import cloudinaryUploadRouter from './routes/cloudinary-upload.ts';\napp.use('/api/upload', cloudinaryUploadRouter);"
+    },
+    "step4": {
+      "title": "Use Component",
+      "location": "Any React/Next.js page",
+      "code": "import FileUploadForm from '@/components/FileUploadForm';\n\nexport default function UploadPage() {\n  return <FileUploadForm />;\n}"
+    }
+  },
+  "versionCompatibility": {
+    "nodejs": ">=14.0.0",
+    "express": ">=4.18.0",
+    "nextjs": ">=13.0.0 (App Router)",
+    "react": ">=18.0.0",
+    "typescript": ">=4.5.0"
+  },
+  "notes": [
+    "All packages are production-ready and widely used",
+    "Cloudinary is free tier available - 100GB/month",
+    "No API key or secret is committed to code - use environment variables",
+    "Frontend component uses native XMLHttpRequest for progress tracking",
+    "Multer stores files in memory before uploading to Cloudinary",
+    "All file uploads require authentication and admin role",
+    "Maximum file size is 100MB (configurable in backend)"
+  ]
+}

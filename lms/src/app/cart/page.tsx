@@ -131,9 +131,9 @@ export default function CartPage() {
               </div>
 
               {/* Cart Items List */}
-              {items.map(item => (
+              {items.map((item, index) => (
                 <div
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   className="bg-white rounded-2xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition"
                 >
                   <div className="flex gap-6">
