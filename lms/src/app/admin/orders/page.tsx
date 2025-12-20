@@ -1,6 +1,5 @@
 'use client';
 
-import AdminSidebar from '@/components/AdminSidebar';
 import { useState, useEffect } from 'react';
 
 interface OrderItem {
@@ -228,8 +227,6 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex flex-col md:flex-row">
-      <AdminSidebar />
-
       {/* Main Content Area */}
       <div className="flex-1">
         {/* Modern Header */}

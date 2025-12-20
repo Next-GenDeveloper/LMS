@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import AdminSidebar from '@/components/AdminSidebar';
-
 interface Product {
   id: string;
   name: string;
@@ -157,8 +155,6 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex flex-col md:flex-row">
-      <AdminSidebar />
-
       {/* Main Content Area */}
       <div className="flex-1">
         {/* Admin Header */}

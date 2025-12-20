@@ -2,11 +2,14 @@
   "name": "lms-monorepo",
   "private": true,
   "scripts": {
-    "dev": "npm run dev:frontend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" --names \"BACKEND,FRONTEND\" --prefix-colors \"bgBlue.bold,bgMagenta.bold\"",
     "dev:frontend": "npm --prefix lms run dev",
     "dev:backend": "npm --prefix lms/backend run dev",
     "build": "npm --prefix lms run build",
     "start": "npm --prefix lms start",
     "install:all": "npm --prefix lms install && npm --prefix lms/backend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

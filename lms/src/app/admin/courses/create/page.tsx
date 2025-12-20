@@ -2,8 +2,6 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import AdminSidebar from '@/components/AdminSidebar';
-
 interface FileWithPreview {
   url: string;
   name: string;
@@ -229,8 +227,6 @@ export default function CreateCoursePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 flex flex-col md:flex-row">
-      <AdminSidebar />
-      
       <div className="flex-1">
         {/* Premium Header */}
         <div className="relative bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-white py-12 mt-14 md:mt-0 overflow-hidden">

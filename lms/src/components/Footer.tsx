@@ -65,7 +65,7 @@ export default function Footer() {
                 <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 My Learning
               </Link></li>
-              <li><Link href="/dashboard/Admin" className="text-slate-300 hover:text-orange-400 transition-colors duration-300 text-sm flex items-center group">
+              <li><Link href="/admin" className="text-slate-300 hover:text-orange-400 transition-colors duration-300 text-sm flex items-center group">
                 <span className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 Admin Dashboard
               </Link></li>

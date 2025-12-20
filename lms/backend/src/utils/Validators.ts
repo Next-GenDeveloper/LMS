@@ -34,6 +34,15 @@ export const loginValidation = [
   body('password').notEmpty().isLength({ min: 8 }).withMessage('Invalid password'),
 ];
 
+export const verifyOtpValidation = [
+  body('email').isEmail().normalizeEmail(),
+  body('otp').isString().matches(/^\d{6}$/).withMessage('OTP must be 6 digits'),
+];
+
+export const resendOtpValidation = [
+  body('email').isEmail().normalizeEmail(),
+];
+
 export const changePasswordValidation = [
   body('currentPassword').optional().isLength({ min: 8 }),
   strongPassword.withMessage('New password does not meet complexity requirements').bail(),

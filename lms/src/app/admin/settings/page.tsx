@@ -1,6 +1,5 @@
 'use client';
 
-import AdminSidebar from '@/components/AdminSidebar';
 import { useState } from 'react';
 
 export default function SettingsPage() {
@@ -30,8 +29,6 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex flex-col md:flex-row">
-      <AdminSidebar />
-
       {/* Main Content Area */}
       <div className="flex-1">
         {/* Header */}

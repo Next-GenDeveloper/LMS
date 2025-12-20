@@ -1,11 +1,25 @@
 import type { Request, Response } from 'express';
+import crypto from 'crypto';
 import { User } from '../models/User.ts';
+import { PendingSignup } from '../models/PendingSignup.ts';
 import { hashPassword, comparePassword } from '../utils/Passwordhash.ts';
 import { generateToken } from '../utils/jwt.ts';
+import { ENV } from '../config/env.ts';
+import { sendOtpEmail } from '../utils/emailService.ts';
 import * as expressValidator from 'express-validator';
 const { validationResult } = expressValidator as any;
 
+function generateOtp(): string {
+  // 6-digit code
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function hashOtp(otp: string): string {
+  return crypto.createHash('sha256').update(otp).digest('hex');
+}
+
 export const registerUser = async (req: Request, res: Response) => {
+  // Step 1: Create a pending signup + send OTP.
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -13,31 +27,182 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     const { email, password, fullName } = req.body;
-    const [firstName, ...rest] = (fullName || '').split(' ');
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+    const [firstName, ...rest] = String(fullName || '').trim().split(' ');
     const lastName = rest.join(' ') || '';
-    
+
     // Prevent admin registration through normal registration
     const ADMIN_EMAIL = 'mirkashi28@gmail.com';
-    if (email.toLowerCase().trim() === ADMIN_EMAIL.toLowerCase()) {
+    if (normalizedEmail === ADMIN_EMAIL.toLowerCase()) {
       return res.status(403).json({ message: 'Admin account cannot be registered through this form' });
     }
-    
-    const existing = await User.findOne({ email });
+
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    const hashed = await hashPassword(password);
-    // Always set role to 'student' - admin role cannot be assigned through registration
-    const newUser = new User({ email, password: hashed, firstName, lastName, role: 'student' });
+    const now = new Date();
+    const existingPending = await PendingSignup.findOne({ email: normalizedEmail });
+
+    // Basic resend cooldown if a pending signup already exists
+    if (existingPending) {
+      const secondsSinceLast = (now.getTime() - new Date(existingPending.lastOtpSentAt).getTime()) / 1000;
+      if (secondsSinceLast < ENV.OTP_RESEND_COOLDOWN_SECONDS) {
+        return res.status(429).json({
+          message: `Please wait ${Math.ceil(ENV.OTP_RESEND_COOLDOWN_SECONDS - secondsSinceLast)} seconds before requesting a new OTP.`,
+        });
+      }
+    }
+
+    const otp = generateOtp();
+    const otpHash = hashOtp(otp);
+    const otpExpiresAt = new Date(now.getTime() + ENV.OTP_TTL_MINUTES * 60 * 1000);
+
+    const passwordHash = await hashPassword(password);
+
+    await PendingSignup.findOneAndUpdate(
+      { email: normalizedEmail },
+      {
+        email: normalizedEmail,
+        passwordHash,
+        firstName: firstName || normalizedEmail,
+        lastName,
+        role: 'student',
+        otpHash,
+        otpExpiresAt,
+        otpAttempts: 0,
+        otpResends: existingPending ? existingPending.otpResends + 1 : 0,
+        lastOtpSentAt: now,
+      },
+      { upsert: true, new: true }
+    );
+
+    await sendOtpEmail({ to: normalizedEmail, fullName, otp, expiresMinutes: ENV.OTP_TTL_MINUTES });
+
+    return res.status(200).json({
+      message: 'OTP sent to your email. Please verify to complete registration.',
+      email: normalizedEmail,
+      expiresInMinutes: ENV.OTP_TTL_MINUTES,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: error?.message || 'Server error' });
+  }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  // Step 2: Verify OTP and create user.
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, otp } = req.body;
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+
+    const pending = await PendingSignup.findOne({ email: normalizedEmail });
+    if (!pending) {
+      return res.status(400).json({ message: 'No pending signup found for this email. Please register again.' });
+    }
+
+    if (pending.otpAttempts >= ENV.OTP_MAX_ATTEMPTS) {
+      return res.status(429).json({ message: 'Too many OTP attempts. Please request a new OTP.' });
+    }
+
+    const now = new Date();
+    if (now > pending.otpExpiresAt) {
+      return res.status(400).json({ message: 'OTP expired. Please request a new OTP.' });
+    }
+
+    const providedHash = hashOtp(String(otp || ''));
+    const isValid = crypto.timingSafeEqual(Buffer.from(providedHash), Buffer.from(pending.otpHash));
+
+    if (!isValid) {
+      pending.otpAttempts += 1;
+      await pending.save();
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    // Ensure user still doesn't exist
+    const existing = await User.findOne({ email: normalizedEmail });
+    if (existing) {
+      await PendingSignup.deleteOne({ _id: pending._id });
+      return res.status(400).json({ message: 'User already exists. Please login.' });
+    }
+
+    const newUser = new User({
+      email: normalizedEmail,
+      password: pending.passwordHash,
+      firstName: pending.firstName,
+      lastName: pending.lastName,
+      role: 'student',
+      isVerified: true,
+    });
+
     await newUser.save();
+    await PendingSignup.deleteOne({ _id: pending._id });
 
     const token = generateToken({ userId: newUser._id.toString(), email: newUser.email, role: 'student' });
 
-    return res.status(201).json({ token, user: { id: newUser._id, email: newUser.email, firstName: newUser.firstName, lastName: newUser.lastName } });
-  } catch (error) {
+    return res.status(201).json({
+      token,
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role,
+      },
+    });
+  } catch (error: any) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: error?.message || 'Server error' });
+  }
+};
+
+export const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email } = req.body;
+    const normalizedEmail = String(email || '').toLowerCase().trim();
+
+    const pending = await PendingSignup.findOne({ email: normalizedEmail });
+    if (!pending) {
+      return res.status(400).json({ message: 'No pending signup found for this email. Please register again.' });
+    }
+
+    if (pending.otpResends >= ENV.OTP_MAX_RESENDS) {
+      return res.status(429).json({ message: 'Resend limit reached. Please register again.' });
+    }
+
+    const now = new Date();
+    const secondsSinceLast = (now.getTime() - new Date(pending.lastOtpSentAt).getTime()) / 1000;
+    if (secondsSinceLast < ENV.OTP_RESEND_COOLDOWN_SECONDS) {
+      return res.status(429).json({
+        message: `Please wait ${Math.ceil(ENV.OTP_RESEND_COOLDOWN_SECONDS - secondsSinceLast)} seconds before resending OTP.`,
+      });
+    }
+
+    const otp = generateOtp();
+    pending.otpHash = hashOtp(otp);
+    pending.otpExpiresAt = new Date(now.getTime() + ENV.OTP_TTL_MINUTES * 60 * 1000);
+    pending.otpAttempts = 0;
+    pending.otpResends += 1;
+    pending.lastOtpSentAt = now;
+    await pending.save();
+
+    await sendOtpEmail({ to: normalizedEmail, fullName: `${pending.firstName} ${pending.lastName}`.trim(), otp, expiresMinutes: ENV.OTP_TTL_MINUTES });
+
+    return res.json({ message: 'OTP resent', email: normalizedEmail, expiresInMinutes: ENV.OTP_TTL_MINUTES });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: error?.message || 'Server error' });
   }
 };
 
@@ -107,6 +272,10 @@ export const loginUser = async (req: Request, res: Response) => {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({ message: 'Email not verified. Please complete OTP verification.' });
     }
 
     const isMatch = await comparePassword(password, user.password);

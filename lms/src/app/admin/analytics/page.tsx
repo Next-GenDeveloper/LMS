@@ -1,7 +1,5 @@
 'use client';
 
-import AdminSidebar from '@/components/AdminSidebar';
-
 export default function AnalyticsPage() {
   const salesData = [
     { month: 'Jan', sales: 12000, orders: 45 },
@@ -24,8 +22,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-slate-50 flex flex-col md:flex-row">
-      <AdminSidebar />
-
       {/* Main Content Area */}
       <div className="flex-1">
         {/* Header */}

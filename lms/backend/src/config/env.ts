@@ -22,6 +22,14 @@ export const ENV = {
   EMAIL_SERVICE: process.env.EMAIL_SERVICE || 'gmail',
   EMAIL_USER: process.env.EMAIL_USER || '',
   EMAIL_PASSWORD: process.env.EMAIL_PASSWORD || '',
+  EMAIL_FROM: process.env.EMAIL_FROM || process.env.EMAIL_USER || '',
+  EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || '9Tangle',
+
+  // OTP
+  OTP_TTL_MINUTES: Number(process.env.OTP_TTL_MINUTES || 10),
+  OTP_MAX_ATTEMPTS: Number(process.env.OTP_MAX_ATTEMPTS || 5),
+  OTP_MAX_RESENDS: Number(process.env.OTP_MAX_RESENDS || 3),
+  OTP_RESEND_COOLDOWN_SECONDS: Number(process.env.OTP_RESEND_COOLDOWN_SECONDS || 60),
 
   // Stripe
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',

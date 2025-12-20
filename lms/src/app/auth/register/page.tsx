@@ -44,11 +44,16 @@ export default function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [passwordValue, setPasswordValue] = useState('');
 
+  // OTP flow state
+  const [step, setStep] = useState<'form' | 'otp'>('form');
+  const [pending, setPending] = useState<{ fullName: string; email: string; password: string } | null>(null);
+  const [otp, setOtp] = useState('');
+  const [otpInfo, setOtpInfo] = useState<{ email: string; expiresInMinutes: number } | null>(null);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: 'onSubmit',
@@ -56,84 +61,107 @@ export default function RegisterForm() {
   });
 
   const onSubmit = async (data: RegisterFormData) => {
+    // Step 1: Request OTP
     setIsLoading(true);
     try {
-      // Client-side password validation
       const requirements = getPasswordRequirements(data.password || '');
-      const unmetRequirements = requirements.filter(req => !req.test);
-
+      const unmetRequirements = requirements.filter((req) => !req.test);
       if (unmetRequirements.length > 0) {
-        const messages = unmetRequirements.map(req => req.message);
+        const messages = unmetRequirements.map((req) => req.message);
         alert(`Password must meet the following requirements:\n• ${messages.join('\n• ')}`);
-        setIsLoading(false);
         return;
       }
 
-      // Prevent admin email registration
       if (data.email.toLowerCase().trim() === 'mirkashi28@gmail.com') {
         alert('This email cannot be used for registration.');
-        setIsLoading(false);
         return;
       }
+
+      // Save pending data locally for OTP step
+      setPending({ fullName: data.fullName, email: data.email, password: data.password });
 
       // Clear any existing profile data from previous users
       localStorage.removeItem('userProfile');
       localStorage.removeItem('profileDraft');
 
-      let result: any = null;
-      try {
-        result = await apiFetch<{ token: string; user?: { id: string; email: string; firstName?: string; lastName?: string } }>(
-          '/api/auth/register',
-          {
-            method: 'POST',
-            body: JSON.stringify({
-              email: data.email,
-              password: data.password,
-              fullName: data.fullName,
-            }),
-          }
-        );
-      } catch (networkErr: any) {
-        // Fallback: create a mock token for preview when backend is unreachable
-        console.warn('Register network error, using mock token for preview:', networkErr?.message || networkErr);
-        const { createMockToken } = await import('@/lib/auth');
-        const token = createMockToken({ userId: 'mock-user-' + Date.now(), email: data.email, role: 'student' });
-        localStorage.setItem('authToken', token);
-        // Also persist name so it shows in profile/navbar
-        const [first, ...rest] = data.fullName.split(' ');
-        const last = rest.join(' ');
-        localStorage.setItem('userProfile', JSON.stringify({ firstName: first, lastName: last, email: data.email }));
-        window.location.href = '/my-learning';
-        return;
-      }
-
-      // Store token and redirect
-      if (result?.token) {
-        localStorage.setItem('authToken', result.token);
-        if (result.user) {
-          const { firstName, lastName, email } = result.user;
-          localStorage.setItem('userProfile', JSON.stringify({ firstName: firstName || '', lastName: lastName || '', email }));
-        } else {
-          // best-effort
-          const [first, ...rest] = data.fullName.split(' ');
-          const last = rest.join(' ');
-          localStorage.setItem('userProfile', JSON.stringify({ firstName: first, lastName: last, email: data.email }));
+      const resp = await apiFetch<{ message: string; email: string; expiresInMinutes: number }>(
+        '/api/auth/register',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+            fullName: data.fullName,
+          }),
         }
-        window.location.href = '/my-learning';
-      } else {
-        throw new Error('Registration failed: No token received');
-      }
-      reset();
+      );
+
+      setOtpInfo({ email: resp.email, expiresInMinutes: resp.expiresInMinutes });
+      setStep('otp');
+      alert(resp.message || 'OTP sent to your email');
     } catch (error: any) {
       console.error(error);
       const errorMsg = error?.message || 'Registration failed. Please try again.';
       if (errorMsg.includes('already exists') || errorMsg.includes('User already exists')) {
         alert('This email is already registered. Please use a different email or try logging in.');
-      } else if (errorMsg.includes('Password') || errorMsg.includes('password')) {
-        alert('Password does not meet requirements. Must be 8+ chars with uppercase, lowercase, digit and special character.');
       } else {
         alert(errorMsg);
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onVerifyOtp = async () => {
+    if (!pending?.email) {
+      alert('Missing signup data. Please register again.');
+      setStep('form');
+      return;
+    }
+
+    const code = otp.trim();
+    if (!/^\d{6}$/.test(code)) {
+      alert('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const result = await apiFetch<{ token: string; user: { id: string; email: string; firstName?: string; lastName?: string; role?: string } }>(
+        '/api/auth/verify-otp',
+        {
+          method: 'POST',
+          body: JSON.stringify({ email: pending.email, otp: code }),
+        }
+      );
+
+      localStorage.setItem('authToken', result.token);
+      const { firstName, lastName, email } = result.user || ({} as any);
+      localStorage.setItem('userProfile', JSON.stringify({ firstName: firstName || '', lastName: lastName || '', email }));
+
+      // Redirect after successful verification
+      window.location.href = '/dashboard/profile';
+    } catch (error: any) {
+      console.error(error);
+      alert(error?.message || 'OTP verification failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onResendOtp = async () => {
+    if (!pending?.email) return;
+    setIsLoading(true);
+    try {
+      const resp = await apiFetch<{ message: string; email: string; expiresInMinutes: number }>(
+        '/api/auth/resend-otp',
+        { method: 'POST', body: JSON.stringify({ email: pending.email }) }
+      );
+      setOtpInfo({ email: resp.email, expiresInMinutes: resp.expiresInMinutes });
+      alert(resp.message || 'OTP resent');
+    } catch (error: any) {
+      console.error(error);
+      alert(error?.message || 'Failed to resend OTP');
     } finally {
       setIsLoading(false);
     }
@@ -205,8 +233,20 @@ export default function RegisterForm() {
                   </p>
                 </div>
 
-                <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
-                  {/* Full Name */}
+                <form
+                  className="space-y-5"
+                  onSubmit={
+                    step === 'form'
+                      ? handleSubmit(onSubmit)
+                      : (e) => {
+                          e.preventDefault();
+                          onVerifyOtp();
+                        }
+                  }
+                >
+                  {step === 'form' && (
+                    <>
+                      {/* Full Name */}
                   <div className="space-y-2">
                     <label htmlFor="fullName" className="block text-sm font-semibold text-foreground">
                       Full Name
@@ -350,6 +390,47 @@ export default function RegisterForm() {
                       <p className="text-sm text-red-600 font-medium">{errors.confirmPassword.message}</p>
                     )}
                   </div>
+                    </>
+                  )}
+
+                  {step === 'otp' && (
+                    <div className="space-y-3 rounded-xl border border-border p-4 bg-background">
+                      <div className="font-semibold">Enter OTP</div>
+                      <div className="text-sm text-muted-foreground">
+                        We sent a 6-digit code to <span className="font-medium">{otpInfo?.email || pending?.email}</span>
+                        {otpInfo?.expiresInMinutes ? ` (expires in ${otpInfo.expiresInMinutes} min)` : ''}.
+                      </div>
+                      <input
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        inputMode="numeric"
+                        maxLength={6}
+                        className="w-full h-14 text-base border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring bg-background text-foreground transition-all px-4 tracking-widest text-center"
+                        placeholder="______"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={onResendOtp}
+                          disabled={isLoading}
+                          className="flex-1 h-12 rounded-xl border border-border font-semibold hover:bg-muted transition disabled:opacity-70"
+                        >
+                          Resend OTP
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setStep('form');
+                            setOtp('');
+                          }}
+                          disabled={isLoading}
+                          className="flex-1 h-12 rounded-xl border border-border font-semibold hover:bg-muted transition disabled:opacity-70"
+                        >
+                          Edit Details
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
@@ -362,10 +443,10 @@ export default function RegisterForm() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                         </svg>
-                        Creating Account...
+                        {step === 'form' ? 'Sending OTP...' : 'Verifying OTP...'}
                       </span>
                     ) : (
-                      'Create Account'
+                      step === 'form' ? 'Send OTP' : 'Verify OTP'
                     )}
                   </button>
 

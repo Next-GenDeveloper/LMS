@@ -1,28 +1,68 @@
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import { ENV } from '../config/env.ts';
 
 dotenv.config();
 
-// Create transporter
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
+function createTransporter() {
+  // NOTE: We keep gmail defaults for this project.
+  // For production, consider providing full SMTP host/port configuration.
+  return nodemailer.createTransport({
+    service: ENV.EMAIL_SERVICE || 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+      user: ENV.EMAIL_USER,
+      pass: ENV.EMAIL_PASSWORD,
+    },
+  });
+}
 
-// Verify transporter configuration
-transporter.verify((error, success) => {
+function assertEmailConfigured() {
+  if (!ENV.EMAIL_USER || !ENV.EMAIL_PASSWORD) {
+    throw new Error('Email is not configured. Please set EMAIL_USER and EMAIL_PASSWORD in backend .env');
+  }
+}
+
+const transporter = createTransporter();
+
+// Verify transporter configuration (non-fatal)
+transporter.verify((error) => {
   if (error) {
-    console.error('❌ Email transporter error:', error);
+    console.error('❌ Email transporter not ready:', error?.message || error);
   } else {
     console.log('✅ Email server is ready to send messages');
   }
 });
+
+export async function sendOtpEmail(opts: { to: string; fullName?: string; otp: string; expiresMinutes: number }) {
+  assertEmailConfigured();
+
+  const { to, fullName, otp, expiresMinutes } = opts;
+  const safeName = fullName?.trim() ? fullName.trim() : 'there';
+
+  const html = `
+  <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px;">
+    <h2 style="margin:0 0 12px 0;">Verify your email</h2>
+    <p style="margin:0 0 16px 0;">Hi ${safeName},</p>
+    <p style="margin:0 0 16px 0;">Your OTP code is:</p>
+    <div style="font-size: 28px; letter-spacing: 6px; font-weight: 700; padding: 12px 16px; background:#f3f4f6; border-radius: 10px; display:inline-block;">${otp}</div>
+    <p style="margin:16px 0 0 0; color:#6b7280;">This code will expire in ${expiresMinutes} minutes.</p>
+    <p style="margin:16px 0 0 0; color:#6b7280;">If you did not request this, you can ignore this email.</p>
+  </div>
+  `;
+
+  const mailOptions = {
+    from: `"${ENV.EMAIL_FROM_NAME}" <${ENV.EMAIL_FROM}>`,
+    to,
+    subject: 'Your OTP code - 9Tangle',
+    html,
+  };
+
+  const info = await transporter.sendMail(mailOptions);
+  return { success: true, messageId: info.messageId };
+}
 
 interface OrderItem {
   name: string;

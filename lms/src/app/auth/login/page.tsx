@@ -59,7 +59,7 @@ export default function LoginForm() {
 
           // Redirect based on role
           if (role === 'admin') {
-            router.push('/dashboard/Admin');
+            router.push('/admin');
           } else {
             router.push('/my-learning');
           }
